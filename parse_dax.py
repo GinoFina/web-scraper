@@ -18,9 +18,9 @@ for line in text.split('\n'):
         continue
         
     if current_role:
-        p_match = valid_pos_re.search(line)
-        if p_match:
-            roles[current_role]['valid_positions'].append(p_match.group(1))
+        p_matches = valid_pos_re.findall(line)
+        if p_matches:
+            roles[current_role]['valid_positions'].extend(p_matches)
             
         w_match = weight_re.search(line)
         if w_match:

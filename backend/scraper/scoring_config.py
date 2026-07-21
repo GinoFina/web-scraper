@@ -92,7 +92,8 @@ ROLES_CONFIG = {
     },
     "Wing_Back": {
         "valid_positions": [
-            "DR"
+            "DR",
+            "DL"
         ],
         "weights": {
             "goals": 0.01,
@@ -115,7 +116,8 @@ ROLES_CONFIG = {
     },
     "Creative_Full_Back": {
         "valid_positions": [
-            "DR"
+            "DR",
+            "DL"
         ],
         "weights": {
             "assists": 0.18,
@@ -138,7 +140,8 @@ ROLES_CONFIG = {
     },
     "Defensive_Full_Back": {
         "valid_positions": [
-            "DR"
+            "DR",
+            "DL"
         ],
         "weights": {
             "accurate_passes": 0.04,
@@ -161,7 +164,8 @@ ROLES_CONFIG = {
     },
     "Deepying_Playmaker": {
         "valid_positions": [
-            "DM"
+            "DM",
+            "MC"
         ],
         "weights": {
             "assists": 0.05,
@@ -183,7 +187,8 @@ ROLES_CONFIG = {
     },
     "Destroyer": {
         "valid_positions": [
-            "DM"
+            "DM",
+            "MC"
         ],
         "weights": {
             "accurate_passes": 0.07,
@@ -201,7 +206,8 @@ ROLES_CONFIG = {
     },
     "Box_to_box": {
         "valid_positions": [
-            "DM"
+            "DM",
+            "MC"
         ],
         "weights": {
             "goals": 0.01,
@@ -226,7 +232,8 @@ ROLES_CONFIG = {
     },
     "Attacking_midfielder": {
         "valid_positions": [
-            "MC"
+            "MC",
+            "AM"
         ],
         "weights": {
             "goals": 0.15,
@@ -250,7 +257,8 @@ ROLES_CONFIG = {
     },
     "Shadow_Striker": {
         "valid_positions": [
-            "MC"
+            "MC",
+            "AM"
         ],
         "weights": {
             "goals": 0.28,
@@ -269,7 +277,8 @@ ROLES_CONFIG = {
     },
     "Enganche": {
         "valid_positions": [
-            "MC"
+            "MC",
+            "AM"
         ],
         "weights": {
             "goals": 0.05,
@@ -289,7 +298,10 @@ ROLES_CONFIG = {
     },
     "Wide_Midfielder": {
         "valid_positions": [
-            "MR"
+            "MR",
+            "ML",
+            "LW",
+            "RW"
         ],
         "weights": {
             "assists": 0.2,
@@ -313,7 +325,10 @@ ROLES_CONFIG = {
     },
     "Wide_Creator": {
         "valid_positions": [
-            "MR"
+            "MR",
+            "ML",
+            "LW",
+            "RW"
         ],
         "weights": {
             "assists": 0.25,
@@ -332,7 +347,10 @@ ROLES_CONFIG = {
     },
     "Dribbler": {
         "valid_positions": [
-            "MR"
+            "MR",
+            "ML",
+            "LW",
+            "RW"
         ],
         "weights": {
             "goals": 0.05,
@@ -352,7 +370,10 @@ ROLES_CONFIG = {
     },
     "Wide_Forward": {
         "valid_positions": [
-            "MR"
+            "MR",
+            "ML",
+            "LW",
+            "RW"
         ],
         "weights": {
             "goals": 0.25,

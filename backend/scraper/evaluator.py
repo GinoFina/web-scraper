@@ -63,7 +63,7 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
     # We also need their specific_position from players table
     select_cols = ", ".join(f"s.{c}" for c in actual_stats)
     sql_players = f"""
-        SELECT s.id as stats_id, s.tournament_id, p.specific_position, {select_cols}
+        SELECT s.id as stats_id, s.tournament_id, p.position, p.specific_position, {select_cols}
         FROM season_stats s
         JOIN players p ON p.player_id = s.player_id
         WHERE s.minutes_played >= 180
@@ -80,20 +80,31 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
         for p in players:
             stats_id = p["stats_id"]
             t_id = p["tournament_id"]
-            pos = p["specific_position"] or ""
+            pos = p["specific_position"]
+            if not pos:
+                pos = p["position"] or ""
             
             best_role = None
             best_world_score = -1.0
             best_league_score = -1.0
             
+            # Expand generic positions to specific roles
+            expanded_pos = pos.upper()
+            pos_parts = expanded_pos.replace(" ", "").split("/")
+            if "F" in pos_parts:
+                expanded_pos += "/ST/RW/LW"
+            if "M" in pos_parts:
+                expanded_pos += "/AM/MC/DM/ML/MR"
+            if "D" in pos_parts:
+                expanded_pos += "/DC/DL/DR"
+                
             # Find which roles apply to this player's position
             for role_name, config in ROLES_CONFIG.items():
                 valid_positions = config["valid_positions"]
                 
-                # Check if player's specific position is in the valid list (or contains it)
                 is_valid = False
                 for vp in valid_positions:
-                    if vp.upper() in pos.upper():
+                    if vp.upper() in expanded_pos:
                         is_valid = True
                         break
                         
