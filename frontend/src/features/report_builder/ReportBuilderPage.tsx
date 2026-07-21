@@ -1,29 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { DndContext, DragEndEvent, DragOverlay } from '@dnd-kit/core'
 import { restrictToWindowEdges } from '@dnd-kit/modifiers'
-import { getPlayers } from '../../services/api'
 import { useReportStore, ComponentType } from '../../store/reportStore'
 
 import DraggablePaletteItem from './DraggablePaletteItem'
+import PlayerAutocomplete from './components/PlayerAutocomplete'
 import DroppableCanvas from './DroppableCanvas'
 
 const PALETTE_ITEMS: { type: ComponentType, icon: string, label: string, desc: string }[] = [
   { type: 'PlayerCard', icon: '👤', label: 'Player Card', desc: 'Photo, name, team, position' },
   { type: 'RadarChart', icon: '📊', label: 'Radar Chart', desc: 'Percentile radar comparison' },
+  { type: 'ScatterPlot', icon: '📈', label: 'Scatter Plot', desc: 'Goals vs xG league comparison' },
+  { type: 'StatsTable', icon: '📋', label: 'Stats Table', desc: 'Key season statistics grid' },
   { type: 'TextBlock', icon: '📝', label: 'Text Block', desc: 'Custom text or notes' },
 ]
 
 export default function ReportBuilderPage() {
   const { playerId, setPlayerId, addItem, moveItem, items } = useReportStore()
-  const [players, setPlayers] = useState<{ id: number, name: string, club: string }[]>([])
   const [activeDragType, setActiveDragType] = useState<ComponentType | null>(null)
-
-  useEffect(() => {
-    // Fetch a small list of players for the dropdown
-    getPlayers(1, 100, undefined, undefined, undefined, undefined, 'name', 'asc')
-      .then(res => setPlayers(res.data))
-      .catch(() => {})
-  }, [])
 
   const handleDragStart = (event: any) => {
     if (event.active.id.toString().startsWith('palette-')) {
@@ -56,7 +50,7 @@ export default function ReportBuilderPage() {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd} modifiers={[restrictToWindowEdges]}>
-      <div className="h-full flex flex-col p-6 gap-5 animate-fade-in print:p-0">
+      <div className="h-full flex flex-col gap-5 animate-fade-in print:p-0">
         
         {/* Header - Hidden on print */}
         <div className="flex justify-between items-end print:hidden">
@@ -70,16 +64,7 @@ export default function ReportBuilderPage() {
           <div className="flex gap-4 items-center">
             <div className="flex items-center gap-2">
               <label className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Target Player:</label>
-              <select 
-                className="input-dark p-2 text-sm w-64"
-                value={playerId || ''}
-                onChange={(e) => setPlayerId(e.target.value ? Number(e.target.value) : null)}
-              >
-                <option value="">-- Select a Player --</option>
-                {players.map(p => (
-                  <option key={p.id} value={p.id}>{p.name} ({p.club || 'No Club'})</option>
-                ))}
-              </select>
+              <PlayerAutocomplete playerId={playerId} onChange={setPlayerId} />
             </div>
             
             <button 

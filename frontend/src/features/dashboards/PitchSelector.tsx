@@ -4,19 +4,19 @@ interface Props {
 }
 
 const positions = [
-  { id: 'F', label: 'CF', x: 110, y: 50 },
-  { id: 'F', label: 'LW', x: 100, y: 18 },
-  { id: 'F', label: 'RW', x: 100, y: 82 },
-  { id: 'M', label: 'AMF', x: 90, y: 50 },
-  { id: 'M', label: 'CMF', x: 70, y: 50 },
-  { id: 'M', label: 'DMF', x: 55, y: 50 },
-  { id: 'M', label: 'LM', x: 70, y: 15 },
-  { id: 'M', label: 'RM', x: 70, y: 85 },
-  { id: 'D', label: 'LB', x: 35, y: 15 },
-  { id: 'D', label: 'CB', x: 35, y: 38 },
-  { id: 'D', label: 'CB', x: 35, y: 62 },
-  { id: 'D', label: 'RB', x: 35, y: 85 },
-  { id: 'G', label: 'GK', x: 15, y: 50 },
+  { id: 'F', label: 'CF', x: 20, y: 50 },
+  { id: 'F', label: 'LW', x: 30, y: 18 },
+  { id: 'F', label: 'RW', x: 30, y: 82 },
+  { id: 'M', label: 'AMF', x: 40, y: 50 },
+  { id: 'M', label: 'CMF', x: 60, y: 50 },
+  { id: 'M', label: 'DMF', x: 75, y: 50 },
+  { id: 'M', label: 'LM', x: 60, y: 15 },
+  { id: 'M', label: 'RM', x: 60, y: 85 },
+  { id: 'D', label: 'LB', x: 95, y: 15 },
+  { id: 'D', label: 'CB', x: 95, y: 38 },
+  { id: 'D', label: 'CB', x: 95, y: 62 },
+  { id: 'D', label: 'RB', x: 95, y: 85 },
+  { id: 'G', label: 'GK', x: 123, y: 50 },
 ]
 
 export default function PitchSelector({ selected, onSelect }: Props) {

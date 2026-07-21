@@ -1,0 +1,1390 @@
+// Columna calculada: Shot-Stopper
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: GK
+col_Score_Shot_Stopper =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "GK")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_saves = MINX(pool, '2_DB_p90'[saves])
+VAR max_saves = MAXX(pool, '2_DB_p90'[saves])
+VAR min_clean_sheets = MINX(pool, '2_DB_p90'[clean_sheets])
+VAR max_clean_sheets = MAXX(pool, '2_DB_p90'[clean_sheets])
+VAR min_saves_inside_box = MINX(pool, '2_DB_p90'[saves_inside_box])
+VAR max_saves_inside_box = MAXX(pool, '2_DB_p90'[saves_inside_box])
+VAR min_saves_outside_box = MINX(pool, '2_DB_p90'[saves_outside_box])
+VAR max_saves_outside_box = MAXX(pool, '2_DB_p90'[saves_outside_box])
+VAR min_goals_conceded = MINX(pool, '2_DB_p90'[goals_conceded])
+VAR max_goals_conceded = MAXX(pool, '2_DB_p90'[goals_conceded])
+VAR min_goals_conceded_inside_box = MINX(pool, '2_DB_p90'[goals_conceded_inside_box])
+VAR max_goals_conceded_inside_box = MAXX(pool, '2_DB_p90'[goals_conceded_inside_box])
+VAR min_goals_conceded_outside_box = MINX(pool, '2_DB_p90'[goals_conceded_outside_box])
+VAR max_goals_conceded_outside_box = MAXX(pool, '2_DB_p90'[goals_conceded_outside_box])
+VAR min_high_claims = MINX(pool, '2_DB_p90'[high_claims])
+VAR max_high_claims = MAXX(pool, '2_DB_p90'[high_claims])
+
+VAR s_saves = DIVIDE(COALESCE('2_DB_p90'[saves], 0) - min_saves, max_saves - min_saves, 0) * 0.35
+VAR s_clean_sheets = DIVIDE(COALESCE('2_DB_p90'[clean_sheets], 0) - min_clean_sheets, max_clean_sheets - min_clean_sheets, 0) * 0.2
+VAR s_saves_inside_box = DIVIDE(COALESCE('2_DB_p90'[saves_inside_box], 0) - min_saves_inside_box, max_saves_inside_box - min_saves_inside_box, 0) * 0.05
+VAR s_saves_outside_box = DIVIDE(COALESCE('2_DB_p90'[saves_outside_box], 0) - min_saves_outside_box, max_saves_outside_box - min_saves_outside_box, 0) * 0.05
+VAR s_goals_conceded = DIVIDE(COALESCE('2_DB_p90'[goals_conceded], 0) - min_goals_conceded, max_goals_conceded - min_goals_conceded, 0) * 0.2
+VAR s_goals_conceded_inside_box = DIVIDE(COALESCE('2_DB_p90'[goals_conceded_inside_box], 0) - min_goals_conceded_inside_box, max_goals_conceded_inside_box - min_goals_conceded_inside_box, 0) * 0.05
+VAR s_goals_conceded_outside_box = DIVIDE(COALESCE('2_DB_p90'[goals_conceded_outside_box], 0) - min_goals_conceded_outside_box, max_goals_conceded_outside_box - min_goals_conceded_outside_box, 0) * 0.05
+VAR s_high_claims = DIVIDE(COALESCE('2_DB_p90'[high_claims], 0) - min_high_claims, max_high_claims - min_high_claims, 0) * 0.05
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_saves + s_clean_sheets + s_saves_inside_box + s_saves_outside_box + s_goals_conceded + s_goals_conceded_inside_box + s_goals_conceded_outside_box + s_high_claims) * 100
+)
+
+================================================================================
+
+// Columna calculada: Sweeper
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: GK
+col_Score_Sweeper =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "GK")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_saves = MINX(pool, '2_DB_p90'[saves])
+VAR max_saves = MAXX(pool, '2_DB_p90'[saves])
+VAR min_clean_sheets = MINX(pool, '2_DB_p90'[clean_sheets])
+VAR max_clean_sheets = MAXX(pool, '2_DB_p90'[clean_sheets])
+VAR min_goals_conceded = MINX(pool, '2_DB_p90'[goals_conceded])
+VAR max_goals_conceded = MAXX(pool, '2_DB_p90'[goals_conceded])
+VAR min_punches = MINX(pool, '2_DB_p90'[punches])
+VAR max_punches = MAXX(pool, '2_DB_p90'[punches])
+VAR min_high_claims = MINX(pool, '2_DB_p90'[high_claims])
+VAR max_high_claims = MAXX(pool, '2_DB_p90'[high_claims])
+VAR min_runs_out = MINX(pool, '2_DB_p90'[runs_out])
+VAR max_runs_out = MAXX(pool, '2_DB_p90'[runs_out])
+VAR min_successful_runs_out = MINX(pool, '2_DB_p90'[successful_runs_out])
+VAR max_successful_runs_out = MAXX(pool, '2_DB_p90'[successful_runs_out])
+
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.08
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.05
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.06
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.04
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.05
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.05
+VAR s_saves = DIVIDE(COALESCE('2_DB_p90'[saves], 0) - min_saves, max_saves - min_saves, 0) * 0.1
+VAR s_clean_sheets = DIVIDE(COALESCE('2_DB_p90'[clean_sheets], 0) - min_clean_sheets, max_clean_sheets - min_clean_sheets, 0) * 0.15
+VAR s_goals_conceded = DIVIDE(COALESCE('2_DB_p90'[goals_conceded], 0) - min_goals_conceded, max_goals_conceded - min_goals_conceded, 0) * 0.1
+VAR s_punches = DIVIDE(COALESCE('2_DB_p90'[punches], 0) - min_punches, max_punches - min_punches, 0) * 0.1
+VAR s_high_claims = DIVIDE(COALESCE('2_DB_p90'[high_claims], 0) - min_high_claims, max_high_claims - min_high_claims, 0) * 0.1
+VAR s_runs_out = DIVIDE(COALESCE('2_DB_p90'[runs_out], 0) - min_runs_out, max_runs_out - min_runs_out, 0) * 0.08
+VAR s_successful_runs_out = DIVIDE(COALESCE('2_DB_p90'[successful_runs_out], 0) - min_successful_runs_out, max_successful_runs_out - min_successful_runs_out, 0) * 0.04
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_accurate_passes + s_accurate_passes_pct + s_accurate_long_balls + s_accurate_long_balls_pct + s_aerial_duels_won + s_aerial_duels_won_pct + s_saves + s_clean_sheets + s_goals_conceded + s_punches + s_high_claims + s_runs_out + s_successful_runs_out) * 100
+)
+
+================================================================================
+
+// Columna calculada: Ball-Playing Defender
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DC
+col_Score_Ball_Playing_Defender =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DC")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.25
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.1
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.1
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.08
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.03
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.06
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.08
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.05
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.08
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.05
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.05
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.07
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_accurate_passes + s_accurate_passes_pct + s_accurate_long_balls + s_accurate_long_balls_pct + s_dribbles_won + s_dribbles_won_pct + s_aerial_duels_won + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_won_pct + s_tackles + s_interceptions) * 100
+)
+
+================================================================================
+
+// Columna calculada: Aerial Dominant Defender
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DC
+col_Score_Aerial_Dominant_Defender =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DC")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_total = MINX(pool, '2_DB_p90'[aerial_duels_total])
+VAR max_aerial_duels_total = MAXX(pool, '2_DB_p90'[aerial_duels_total])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+VAR min_clearances = MINX(pool, '2_DB_p90'[clearances])
+VAR max_clearances = MAXX(pool, '2_DB_p90'[clearances])
+
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.3
+VAR s_aerial_duels_total = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_total], 0) - min_aerial_duels_total, max_aerial_duels_total - min_aerial_duels_total, 0) * 0.1
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.2
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.07
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.03
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.1
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.05
+VAR s_clearances = DIVIDE(COALESCE('2_DB_p90'[clearances], 0) - min_clearances, max_clearances - min_clearances, 0) * 0.15
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_aerial_duels_won + s_aerial_duels_total + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_won_pct + s_tackles + s_interceptions + s_clearances) * 100
+)
+
+================================================================================
+
+// Columna calculada: All round CB
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DC
+col_Score_All_round_CB =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DC")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_total = MINX(pool, '2_DB_p90'[aerial_duels_total])
+VAR max_aerial_duels_total = MAXX(pool, '2_DB_p90'[aerial_duels_total])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_total = MINX(pool, '2_DB_p90'[ground_duels_total])
+VAR max_ground_duels_total = MAXX(pool, '2_DB_p90'[ground_duels_total])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+VAR min_clearances = MINX(pool, '2_DB_p90'[clearances])
+VAR max_clearances = MAXX(pool, '2_DB_p90'[clearances])
+
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.08
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.06
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.07
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.05
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.01
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.02
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.13
+VAR s_aerial_duels_total = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_total], 0) - min_aerial_duels_total, max_aerial_duels_total - min_aerial_duels_total, 0) * 0.06
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.08
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.13
+VAR s_ground_duels_total = DIVIDE(COALESCE('2_DB_p90'[ground_duels_total], 0) - min_ground_duels_total, max_ground_duels_total - min_ground_duels_total, 0) * 0.06
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.08
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.06
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.06
+VAR s_clearances = DIVIDE(COALESCE('2_DB_p90'[clearances], 0) - min_clearances, max_clearances - min_clearances, 0) * 0.05
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_accurate_passes + s_accurate_passes_pct + s_accurate_long_balls + s_accurate_long_balls_pct + s_dribbles_won + s_dribbles_won_pct + s_aerial_duels_won + s_aerial_duels_total + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_total + s_ground_duels_won_pct + s_tackles + s_interceptions + s_clearances) * 100
+)
+
+================================================================================
+
+// Columna calculada: Wing-Back
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DR | DL
+col_Score_Wing_Back =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DR") || CONTAINSSTRING(pos, "DL")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_crosses = MINX(pool, '2_DB_p90'[accurate_crosses])
+VAR max_accurate_crosses = MAXX(pool, '2_DB_p90'[accurate_crosses])
+VAR min_total_crosses = MINX(pool, '2_DB_p90'[total_crosses])
+VAR max_total_crosses = MAXX(pool, '2_DB_p90'[total_crosses])
+VAR min_accurate_crosses_pct = MINX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR max_accurate_crosses_pct = MAXX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.01
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.13
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.05
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.03
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.015
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.01
+VAR s_accurate_crosses = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses], 0) - min_accurate_crosses, max_accurate_crosses - min_accurate_crosses, 0) * 0.12
+VAR s_total_crosses = DIVIDE(COALESCE('2_DB_p90'[total_crosses], 0) - min_total_crosses, max_total_crosses - min_total_crosses, 0) * 0.1
+VAR s_accurate_crosses_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses_pct], 0) - min_accurate_crosses_pct, max_accurate_crosses_pct - min_accurate_crosses_pct, 0) * 0.07
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.005
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.15
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.08
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.08
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.06
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.05
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.04
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_accurate_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_crosses + s_total_crosses + s_accurate_crosses_pct + s_total_shots + s_dribbles_won + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_won_pct + s_tackles + s_interceptions) * 100
+)
+
+================================================================================
+
+// Columna calculada: Creative Full-Back
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DR | DL
+col_Score_Creative_Full_Back =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DR") || CONTAINSSTRING(pos, "DL")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_total_passes = MINX(pool, '2_DB_p90'[total_passes])
+VAR max_total_passes = MAXX(pool, '2_DB_p90'[total_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_accurate_crosses = MINX(pool, '2_DB_p90'[accurate_crosses])
+VAR max_accurate_crosses = MAXX(pool, '2_DB_p90'[accurate_crosses])
+VAR min_accurate_crosses_pct = MINX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR max_accurate_crosses_pct = MAXX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.18
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.12
+VAR s_total_passes = DIVIDE(COALESCE('2_DB_p90'[total_passes], 0) - min_total_passes, max_total_passes - min_total_passes, 0) * 0.1
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.1
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.06
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.05
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.06
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.04
+VAR s_accurate_crosses = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses], 0) - min_accurate_crosses, max_accurate_crosses - min_accurate_crosses, 0) * 0.04
+VAR s_accurate_crosses_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses_pct], 0) - min_accurate_crosses_pct, max_accurate_crosses_pct - min_accurate_crosses_pct, 0) * 0.03
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.015
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.005
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.08
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.06
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.02
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.04
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_assists + s_accurate_passes + s_total_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_long_balls + s_accurate_long_balls_pct + s_accurate_crosses + s_accurate_crosses_pct + s_dribbles_won + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_won_pct + s_tackles + s_interceptions) * 100
+)
+
+================================================================================
+
+// Columna calculada: Defensive Full-Back
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DR | DL
+col_Score_Defensive_Full_Back =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DR") || CONTAINSSTRING(pos, "DL")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_accurate_crosses = MINX(pool, '2_DB_p90'[accurate_crosses])
+VAR max_accurate_crosses = MAXX(pool, '2_DB_p90'[accurate_crosses])
+VAR min_accurate_crosses_pct = MINX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR max_accurate_crosses_pct = MAXX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_total = MINX(pool, '2_DB_p90'[aerial_duels_total])
+VAR max_aerial_duels_total = MAXX(pool, '2_DB_p90'[aerial_duels_total])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_total = MINX(pool, '2_DB_p90'[ground_duels_total])
+VAR max_ground_duels_total = MAXX(pool, '2_DB_p90'[ground_duels_total])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+VAR min_clearances = MINX(pool, '2_DB_p90'[clearances])
+VAR max_clearances = MAXX(pool, '2_DB_p90'[clearances])
+VAR min_blocked_shots = MINX(pool, '2_DB_p90'[blocked_shots])
+VAR max_blocked_shots = MAXX(pool, '2_DB_p90'[blocked_shots])
+
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.04
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.03
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.03
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.02
+VAR s_accurate_crosses = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses], 0) - min_accurate_crosses, max_accurate_crosses - min_accurate_crosses, 0) * 0.03
+VAR s_accurate_crosses_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses_pct], 0) - min_accurate_crosses_pct, max_accurate_crosses_pct - min_accurate_crosses_pct, 0) * 0.01
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.12
+VAR s_aerial_duels_total = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_total], 0) - min_aerial_duels_total, max_aerial_duels_total - min_aerial_duels_total, 0) * 0.01
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.08
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.2
+VAR s_ground_duels_total = DIVIDE(COALESCE('2_DB_p90'[ground_duels_total], 0) - min_ground_duels_total, max_ground_duels_total - min_ground_duels_total, 0) * 0.02
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.15
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.1
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.1
+VAR s_clearances = DIVIDE(COALESCE('2_DB_p90'[clearances], 0) - min_clearances, max_clearances - min_clearances, 0) * 0.05
+VAR s_blocked_shots = DIVIDE(COALESCE('2_DB_p90'[blocked_shots], 0) - min_blocked_shots, max_blocked_shots - min_blocked_shots, 0) * 0.01
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_accurate_passes + s_accurate_passes_pct + s_accurate_long_balls + s_accurate_long_balls_pct + s_accurate_crosses + s_accurate_crosses_pct + s_aerial_duels_won + s_aerial_duels_total + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_total + s_ground_duels_won_pct + s_tackles + s_interceptions + s_clearances + s_blocked_shots) * 100
+)
+
+================================================================================
+
+// Columna calculada: Deep-Lying Playmaker
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DM | MC
+col_Score_Deep_Lying_Playmaker =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DM") || CONTAINSSTRING(pos, "MC")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_total_passes = MINX(pool, '2_DB_p90'[total_passes])
+VAR max_total_passes = MAXX(pool, '2_DB_p90'[total_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_total_long_balls = MINX(pool, '2_DB_p90'[total_long_balls])
+VAR max_total_long_balls = MAXX(pool, '2_DB_p90'[total_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.05
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.2
+VAR s_total_passes = DIVIDE(COALESCE('2_DB_p90'[total_passes], 0) - min_total_passes, max_total_passes - min_total_passes, 0) * 0.09
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.19
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.07
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.02
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.15
+VAR s_total_long_balls = DIVIDE(COALESCE('2_DB_p90'[total_long_balls], 0) - min_total_long_balls, max_total_long_balls - min_total_long_balls, 0) * 0.03
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.1
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.015
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.02
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.01
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.025
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.01
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.02
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_assists + s_accurate_passes + s_total_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_long_balls + s_total_long_balls + s_accurate_long_balls_pct + s_dribbles_won + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_won_pct + s_tackles + s_interceptions) * 100
+)
+
+================================================================================
+
+// Columna calculada: Destroyer
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DM | MC
+col_Score_Destroyer =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DM") || CONTAINSSTRING(pos, "MC")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+VAR min_clearances = MINX(pool, '2_DB_p90'[clearances])
+VAR max_clearances = MAXX(pool, '2_DB_p90'[clearances])
+
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.07
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.03
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.03
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.02
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.1
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.05
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.2
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.15
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.25
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.08
+VAR s_clearances = DIVIDE(COALESCE('2_DB_p90'[clearances], 0) - min_clearances, max_clearances - min_clearances, 0) * 0.02
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_accurate_passes + s_accurate_passes_pct + s_accurate_long_balls + s_accurate_long_balls_pct + s_aerial_duels_won + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_won_pct + s_tackles + s_interceptions + s_clearances) * 100
+)
+
+================================================================================
+
+// Columna calculada: Box-to-box
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: DM | MC
+col_Score_Box_to_box =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "DM") || CONTAINSSTRING(pos, "MC")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_shots_on_target = MINX(pool, '2_DB_p90'[shots_on_target])
+VAR max_shots_on_target = MAXX(pool, '2_DB_p90'[shots_on_target])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.01
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.01
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.1
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.08
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.02
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.02
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.05
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.03
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.05
+VAR s_shots_on_target = DIVIDE(COALESCE('2_DB_p90'[shots_on_target], 0) - min_shots_on_target, max_shots_on_target - min_shots_on_target, 0) * 0.03
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.05
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.025
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.05
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.025
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.15
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.1
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.1
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.1
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_accurate_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_long_balls + s_accurate_long_balls_pct + s_total_shots + s_shots_on_target + s_dribbles_won + s_dribbles_won_pct + s_aerial_duels_won + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_won_pct + s_tackles + s_interceptions) * 100
+)
+
+================================================================================
+
+// Columna calculada: Attacking midfielder
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: MC | AM
+col_Score_Attacking_midfielder =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "MC") || CONTAINSSTRING(pos, "AM")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_shots_on_target = MINX(pool, '2_DB_p90'[shots_on_target])
+VAR max_shots_on_target = MAXX(pool, '2_DB_p90'[shots_on_target])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_total = MINX(pool, '2_DB_p90'[ground_duels_total])
+VAR max_ground_duels_total = MAXX(pool, '2_DB_p90'[ground_duels_total])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.15
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.15
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.08
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.05
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.08
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.06
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.03
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.02
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.07
+VAR s_shots_on_target = DIVIDE(COALESCE('2_DB_p90'[shots_on_target], 0) - min_shots_on_target, max_shots_on_target - min_shots_on_target, 0) * 0.05
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.04
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.03
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.06
+VAR s_ground_duels_total = DIVIDE(COALESCE('2_DB_p90'[ground_duels_total], 0) - min_ground_duels_total, max_ground_duels_total - min_ground_duels_total, 0) * 0.04
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.07
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.01
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.01
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_accurate_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_long_balls + s_accurate_long_balls_pct + s_total_shots + s_shots_on_target + s_dribbles_won + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_total + s_ground_duels_won_pct + s_tackles + s_interceptions) * 100
+)
+
+================================================================================
+
+// Columna calculada: Shadow Striker
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: MC | AM
+col_Score_Shadow_Striker =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "MC") || CONTAINSSTRING(pos, "AM")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_shots_on_target = MINX(pool, '2_DB_p90'[shots_on_target])
+VAR max_shots_on_target = MAXX(pool, '2_DB_p90'[shots_on_target])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.28
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.05
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.04
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.02
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.04
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.02
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.14
+VAR s_shots_on_target = DIVIDE(COALESCE('2_DB_p90'[shots_on_target], 0) - min_shots_on_target, max_shots_on_target - min_shots_on_target, 0) * 0.17
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.09
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.07
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.05
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.03
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_accurate_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_total_shots + s_shots_on_target + s_dribbles_won + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: Enganche
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: MC | AM
+col_Score_Enganche =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "MC") || CONTAINSSTRING(pos, "AM")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_total_passes = MINX(pool, '2_DB_p90'[total_passes])
+VAR max_total_passes = MAXX(pool, '2_DB_p90'[total_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_shots_on_target = MINX(pool, '2_DB_p90'[shots_on_target])
+VAR max_shots_on_target = MAXX(pool, '2_DB_p90'[shots_on_target])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.05
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.25
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.15
+VAR s_total_passes = DIVIDE(COALESCE('2_DB_p90'[total_passes], 0) - min_total_passes, max_total_passes - min_total_passes, 0) * 0.02
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.06
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.15
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.1
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.04
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.02
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.04
+VAR s_shots_on_target = DIVIDE(COALESCE('2_DB_p90'[shots_on_target], 0) - min_shots_on_target, max_shots_on_target - min_shots_on_target, 0) * 0.02
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.05
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.05
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_accurate_passes + s_total_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_long_balls + s_accurate_long_balls_pct + s_total_shots + s_shots_on_target + s_dribbles_won + s_dribbles_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: Wide Midfielder
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: MR | ML | LW | RW
+col_Score_Wide_Midfielder =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "MR") || CONTAINSSTRING(pos, "ML") || CONTAINSSTRING(pos, "LW") || CONTAINSSTRING(pos, "RW")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_accurate_crosses = MINX(pool, '2_DB_p90'[accurate_crosses])
+VAR max_accurate_crosses = MAXX(pool, '2_DB_p90'[accurate_crosses])
+VAR min_total_crosses = MINX(pool, '2_DB_p90'[total_crosses])
+VAR max_total_crosses = MAXX(pool, '2_DB_p90'[total_crosses])
+VAR min_accurate_crosses_pct = MINX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR max_accurate_crosses_pct = MAXX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_total = MINX(pool, '2_DB_p90'[ground_duels_total])
+VAR max_ground_duels_total = MAXX(pool, '2_DB_p90'[ground_duels_total])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR min_tackles = MINX(pool, '2_DB_p90'[tackles])
+VAR max_tackles = MAXX(pool, '2_DB_p90'[tackles])
+VAR min_interceptions = MINX(pool, '2_DB_p90'[interceptions])
+VAR max_interceptions = MAXX(pool, '2_DB_p90'[interceptions])
+
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.2
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.05
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.03
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.02
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.01
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.03
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.02
+VAR s_accurate_crosses = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses], 0) - min_accurate_crosses, max_accurate_crosses - min_accurate_crosses, 0) * 0.1
+VAR s_total_crosses = DIVIDE(COALESCE('2_DB_p90'[total_crosses], 0) - min_total_crosses, max_total_crosses - min_total_crosses, 0) * 0.02
+VAR s_accurate_crosses_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses_pct], 0) - min_accurate_crosses_pct, max_accurate_crosses_pct - min_accurate_crosses_pct, 0) * 0.08
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.04
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.02
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.12
+VAR s_ground_duels_total = DIVIDE(COALESCE('2_DB_p90'[ground_duels_total], 0) - min_ground_duels_total, max_ground_duels_total - min_ground_duels_total, 0) * 0.06
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.08
+VAR s_tackles = DIVIDE(COALESCE('2_DB_p90'[tackles], 0) - min_tackles, max_tackles - min_tackles, 0) * 0.06
+VAR s_interceptions = DIVIDE(COALESCE('2_DB_p90'[interceptions], 0) - min_interceptions, max_interceptions - min_interceptions, 0) * 0.06
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_assists + s_accurate_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_long_balls + s_accurate_long_balls_pct + s_accurate_crosses + s_total_crosses + s_accurate_crosses_pct + s_dribbles_won + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_total + s_ground_duels_won_pct + s_tackles + s_interceptions) * 100
+)
+
+================================================================================
+
+// Columna calculada: Wide Creator
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: MR | ML | LW | RW
+col_Score_Wide_Creator =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "MR") || CONTAINSSTRING(pos, "ML") || CONTAINSSTRING(pos, "LW") || CONTAINSSTRING(pos, "RW")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_long_balls = MINX(pool, '2_DB_p90'[accurate_long_balls])
+VAR max_accurate_long_balls = MAXX(pool, '2_DB_p90'[accurate_long_balls])
+VAR min_accurate_long_balls_pct = MINX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR max_accurate_long_balls_pct = MAXX(pool, '2_DB_p90'[accurate_long_balls_pct])
+VAR min_accurate_crosses = MINX(pool, '2_DB_p90'[accurate_crosses])
+VAR max_accurate_crosses = MAXX(pool, '2_DB_p90'[accurate_crosses])
+VAR min_total_crosses = MINX(pool, '2_DB_p90'[total_crosses])
+VAR max_total_crosses = MAXX(pool, '2_DB_p90'[total_crosses])
+VAR min_accurate_crosses_pct = MINX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR max_accurate_crosses_pct = MAXX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.25
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.06
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.04
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.17
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.15
+VAR s_accurate_long_balls = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls], 0) - min_accurate_long_balls, max_accurate_long_balls - min_accurate_long_balls, 0) * 0.03
+VAR s_accurate_long_balls_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_long_balls_pct], 0) - min_accurate_long_balls_pct, max_accurate_long_balls_pct - min_accurate_long_balls_pct, 0) * 0.02
+VAR s_accurate_crosses = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses], 0) - min_accurate_crosses, max_accurate_crosses - min_accurate_crosses, 0) * 0.09
+VAR s_total_crosses = DIVIDE(COALESCE('2_DB_p90'[total_crosses], 0) - min_total_crosses, max_total_crosses - min_total_crosses, 0) * 0.03
+VAR s_accurate_crosses_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses_pct], 0) - min_accurate_crosses_pct, max_accurate_crosses_pct - min_accurate_crosses_pct, 0) * 0.06
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.06
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.04
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_assists + s_accurate_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_accurate_long_balls + s_accurate_long_balls_pct + s_accurate_crosses + s_total_crosses + s_accurate_crosses_pct + s_dribbles_won + s_dribbles_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: Dribbler
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: MR | ML | LW | RW
+col_Score_Dribbler =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "MR") || CONTAINSSTRING(pos, "ML") || CONTAINSSTRING(pos, "LW") || CONTAINSSTRING(pos, "RW")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_accurate_crosses = MINX(pool, '2_DB_p90'[accurate_crosses])
+VAR max_accurate_crosses = MAXX(pool, '2_DB_p90'[accurate_crosses])
+VAR min_accurate_crosses_pct = MINX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR max_accurate_crosses_pct = MAXX(pool, '2_DB_p90'[accurate_crosses_pct])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_attempted = MINX(pool, '2_DB_p90'[dribbles_attempted])
+VAR max_dribbles_attempted = MAXX(pool, '2_DB_p90'[dribbles_attempted])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_total = MINX(pool, '2_DB_p90'[ground_duels_total])
+VAR max_ground_duels_total = MAXX(pool, '2_DB_p90'[ground_duels_total])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.05
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.05
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.03
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.02
+VAR s_accurate_crosses = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses], 0) - min_accurate_crosses, max_accurate_crosses - min_accurate_crosses, 0) * 0.05
+VAR s_accurate_crosses_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_crosses_pct], 0) - min_accurate_crosses_pct, max_accurate_crosses_pct - min_accurate_crosses_pct, 0) * 0.03
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.02
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.25
+VAR s_dribbles_attempted = DIVIDE(COALESCE('2_DB_p90'[dribbles_attempted], 0) - min_dribbles_attempted, max_dribbles_attempted - min_dribbles_attempted, 0) * 0.1
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.2
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.07
+VAR s_ground_duels_total = DIVIDE(COALESCE('2_DB_p90'[ground_duels_total], 0) - min_ground_duels_total, max_ground_duels_total - min_ground_duels_total, 0) * 0.08
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.05
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_key_passes + s_big_chances_created + s_accurate_crosses + s_accurate_crosses_pct + s_total_shots + s_dribbles_won + s_dribbles_attempted + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_total + s_ground_duels_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: Wide Forward
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: MR | ML | LW | RW
+col_Score_Wide_Forward =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "MR") || CONTAINSSTRING(pos, "ML") || CONTAINSSTRING(pos, "LW") || CONTAINSSTRING(pos, "RW")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_shots_on_target = MINX(pool, '2_DB_p90'[shots_on_target])
+VAR max_shots_on_target = MAXX(pool, '2_DB_p90'[shots_on_target])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_attempted = MINX(pool, '2_DB_p90'[dribbles_attempted])
+VAR max_dribbles_attempted = MAXX(pool, '2_DB_p90'[dribbles_attempted])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.25
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.15
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.03
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.03
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.12
+VAR s_shots_on_target = DIVIDE(COALESCE('2_DB_p90'[shots_on_target], 0) - min_shots_on_target, max_shots_on_target - min_shots_on_target, 0) * 0.15
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.09
+VAR s_dribbles_attempted = DIVIDE(COALESCE('2_DB_p90'[dribbles_attempted], 0) - min_dribbles_attempted, max_dribbles_attempted - min_dribbles_attempted, 0) * 0.05
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.05
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.05
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.03
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_key_passes + s_big_chances_created + s_total_shots + s_shots_on_target + s_dribbles_won + s_dribbles_attempted + s_dribbles_won_pct + s_ground_duels_won + s_ground_duels_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: Target Man
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: ST
+col_Score_Target_Man =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "ST")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_shots_on_target = MINX(pool, '2_DB_p90'[shots_on_target])
+VAR max_shots_on_target = MAXX(pool, '2_DB_p90'[shots_on_target])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_total = MINX(pool, '2_DB_p90'[aerial_duels_total])
+VAR max_aerial_duels_total = MAXX(pool, '2_DB_p90'[aerial_duels_total])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_total = MINX(pool, '2_DB_p90'[ground_duels_total])
+VAR max_ground_duels_total = MAXX(pool, '2_DB_p90'[ground_duels_total])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.15
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.1
+VAR s_shots_on_target = DIVIDE(COALESCE('2_DB_p90'[shots_on_target], 0) - min_shots_on_target, max_shots_on_target - min_shots_on_target, 0) * 0.05
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.25
+VAR s_aerial_duels_total = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_total], 0) - min_aerial_duels_total, max_aerial_duels_total - min_aerial_duels_total, 0) * 0.18
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.15
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.05
+VAR s_ground_duels_total = DIVIDE(COALESCE('2_DB_p90'[ground_duels_total], 0) - min_ground_duels_total, max_ground_duels_total - min_ground_duels_total, 0) * 0.05
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.02
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_total_shots + s_shots_on_target + s_aerial_duels_won + s_aerial_duels_total + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_total + s_ground_duels_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: Poacher
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: ST
+col_Score_Poacher =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "ST")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_total_shots = MINX(pool, '2_DB_p90'[total_shots])
+VAR max_total_shots = MAXX(pool, '2_DB_p90'[total_shots])
+VAR min_shots_on_target = MINX(pool, '2_DB_p90'[shots_on_target])
+VAR max_shots_on_target = MAXX(pool, '2_DB_p90'[shots_on_target])
+VAR min_aerial_duels_won = MINX(pool, '2_DB_p90'[aerial_duels_won])
+VAR max_aerial_duels_won = MAXX(pool, '2_DB_p90'[aerial_duels_won])
+VAR min_aerial_duels_won_pct = MINX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR max_aerial_duels_won_pct = MAXX(pool, '2_DB_p90'[aerial_duels_won_pct])
+VAR min_ground_duels_won = MINX(pool, '2_DB_p90'[ground_duels_won])
+VAR max_ground_duels_won = MAXX(pool, '2_DB_p90'[ground_duels_won])
+VAR min_ground_duels_won_pct = MINX(pool, '2_DB_p90'[ground_duels_won_pct])
+VAR max_ground_duels_won_pct = MAXX(pool, '2_DB_p90'[ground_duels_won_pct])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.35
+VAR s_total_shots = DIVIDE(COALESCE('2_DB_p90'[total_shots], 0) - min_total_shots, max_total_shots - min_total_shots, 0) * 0.2
+VAR s_shots_on_target = DIVIDE(COALESCE('2_DB_p90'[shots_on_target], 0) - min_shots_on_target, max_shots_on_target - min_shots_on_target, 0) * 0.2
+VAR s_aerial_duels_won = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won], 0) - min_aerial_duels_won, max_aerial_duels_won - min_aerial_duels_won, 0) * 0.08
+VAR s_aerial_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[aerial_duels_won_pct], 0) - min_aerial_duels_won_pct, max_aerial_duels_won_pct - min_aerial_duels_won_pct, 0) * 0.05
+VAR s_ground_duels_won = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won], 0) - min_ground_duels_won, max_ground_duels_won - min_ground_duels_won, 0) * 0.08
+VAR s_ground_duels_won_pct = DIVIDE(COALESCE('2_DB_p90'[ground_duels_won_pct], 0) - min_ground_duels_won_pct, max_ground_duels_won_pct - min_ground_duels_won_pct, 0) * 0.04
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_total_shots + s_shots_on_target + s_aerial_duels_won + s_aerial_duels_won_pct + s_ground_duels_won + s_ground_duels_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: False 9
+// Pool: todos los jugadores con >= 180 minutos
+// Posiciones validas: ST
+col_Score_False_9 =
+VAR pos       = '2_DB_p90'[specific_position]
+VAR minutos   = '2_DB_p90'[minutes_played]
+VAR es_valido = CONTAINSSTRING(pos, "ST")
+VAR tiene_min = minutos >= 180
+
+// Pool fijo: todos los jugadores con >= 180 min
+VAR pool = FILTER(ALL('2_DB_p90'), '2_DB_p90'[minutes_played] >= 180)
+
+VAR min_goals = MINX(pool, '2_DB_p90'[goals])
+VAR max_goals = MAXX(pool, '2_DB_p90'[goals])
+VAR min_assists = MINX(pool, '2_DB_p90'[assists])
+VAR max_assists = MAXX(pool, '2_DB_p90'[assists])
+VAR min_accurate_passes = MINX(pool, '2_DB_p90'[accurate_passes])
+VAR max_accurate_passes = MAXX(pool, '2_DB_p90'[accurate_passes])
+VAR min_accurate_passes_pct = MINX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR max_accurate_passes_pct = MAXX(pool, '2_DB_p90'[accurate_passes_pct])
+VAR min_key_passes = MINX(pool, '2_DB_p90'[key_passes])
+VAR max_key_passes = MAXX(pool, '2_DB_p90'[key_passes])
+VAR min_big_chances_created = MINX(pool, '2_DB_p90'[big_chances_created])
+VAR max_big_chances_created = MAXX(pool, '2_DB_p90'[big_chances_created])
+VAR min_dribbles_won = MINX(pool, '2_DB_p90'[dribbles_won])
+VAR max_dribbles_won = MAXX(pool, '2_DB_p90'[dribbles_won])
+VAR min_dribbles_attempted = MINX(pool, '2_DB_p90'[dribbles_attempted])
+VAR max_dribbles_attempted = MAXX(pool, '2_DB_p90'[dribbles_attempted])
+VAR min_dribbles_won_pct = MINX(pool, '2_DB_p90'[dribbles_won_pct])
+VAR max_dribbles_won_pct = MAXX(pool, '2_DB_p90'[dribbles_won_pct])
+
+VAR s_goals = DIVIDE(COALESCE('2_DB_p90'[goals], 0) - min_goals, max_goals - min_goals, 0) * 0.1
+VAR s_assists = DIVIDE(COALESCE('2_DB_p90'[assists], 0) - min_assists, max_assists - min_assists, 0) * 0.3
+VAR s_accurate_passes = DIVIDE(COALESCE('2_DB_p90'[accurate_passes], 0) - min_accurate_passes, max_accurate_passes - min_accurate_passes, 0) * 0.08
+VAR s_accurate_passes_pct = DIVIDE(COALESCE('2_DB_p90'[accurate_passes_pct], 0) - min_accurate_passes_pct, max_accurate_passes_pct - min_accurate_passes_pct, 0) * 0.05
+VAR s_key_passes = DIVIDE(COALESCE('2_DB_p90'[key_passes], 0) - min_key_passes, max_key_passes - min_key_passes, 0) * 0.13
+VAR s_big_chances_created = DIVIDE(COALESCE('2_DB_p90'[big_chances_created], 0) - min_big_chances_created, max_big_chances_created - min_big_chances_created, 0) * 0.15
+VAR s_dribbles_won = DIVIDE(COALESCE('2_DB_p90'[dribbles_won], 0) - min_dribbles_won, max_dribbles_won - min_dribbles_won, 0) * 0.1
+VAR s_dribbles_attempted = DIVIDE(COALESCE('2_DB_p90'[dribbles_attempted], 0) - min_dribbles_attempted, max_dribbles_attempted - min_dribbles_attempted, 0) * 0.05
+VAR s_dribbles_won_pct = DIVIDE(COALESCE('2_DB_p90'[dribbles_won_pct], 0) - min_dribbles_won_pct, max_dribbles_won_pct - min_dribbles_won_pct, 0) * 0.04
+
+RETURN
+IF(
+    NOT es_valido || NOT tiene_min,
+    BLANK(),
+    (s_goals + s_assists + s_accurate_passes + s_accurate_passes_pct + s_key_passes + s_big_chances_created + s_dribbles_won + s_dribbles_attempted + s_dribbles_won_pct) * 100
+)
+
+================================================================================
+
+// Columna calculada: mejor score de rol para este jugador
+col_Best_Role_Score =
+IF(
+    '2_DB_p90'[minutes_played] < 180,
+    BLANK(),
+    MAXX(
+        {
+    COALESCE('2_DB_p90'[col_Score_Shot_Stopper], 0),
+    COALESCE('2_DB_p90'[col_Score_Sweeper], 0),
+    COALESCE('2_DB_p90'[col_Score_Ball_Playing_Defender], 0),
+    COALESCE('2_DB_p90'[col_Score_Aerial_Dominant_Defender], 0),
+    COALESCE('2_DB_p90'[col_Score_All_round_CB], 0),
+    COALESCE('2_DB_p90'[col_Score_Wing_Back], 0),
+    COALESCE('2_DB_p90'[col_Score_Creative_Full_Back], 0),
+    COALESCE('2_DB_p90'[col_Score_Defensive_Full_Back], 0),
+    COALESCE('2_DB_p90'[col_Score_Deep_Lying_Playmaker], 0),
+    COALESCE('2_DB_p90'[col_Score_Destroyer], 0),
+    COALESCE('2_DB_p90'[col_Score_Box_to_box], 0),
+    COALESCE('2_DB_p90'[col_Score_Attacking_midfielder], 0),
+    COALESCE('2_DB_p90'[col_Score_Shadow_Striker], 0),
+    COALESCE('2_DB_p90'[col_Score_Enganche], 0),
+    COALESCE('2_DB_p90'[col_Score_Wide_Midfielder], 0),
+    COALESCE('2_DB_p90'[col_Score_Wide_Creator], 0),
+    COALESCE('2_DB_p90'[col_Score_Dribbler], 0),
+    COALESCE('2_DB_p90'[col_Score_Wide_Forward], 0),
+    COALESCE('2_DB_p90'[col_Score_Target_Man], 0),
+    COALESCE('2_DB_p90'[col_Score_Poacher], 0),
+    COALESCE('2_DB_p90'[col_Score_False_9], 0)
+        },
+        [Value]
+    )
+)
+
+================================================================================
+
+// Columna calculada: nombre del mejor rol para este jugador
+col_Best_Role_Name =
+IF(
+    '2_DB_p90'[minutes_played] < 180,
+    BLANK(),
+    VAR best_score = '2_DB_p90'[col_Best_Role_Score]
+    RETURN
+    SWITCH(
+        TRUE(), '2_DB_p90'[col_Score_Shot_Stopper] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Shot_Stopper]), "Shot-Stopper",
+        TRUE(), '2_DB_p90'[col_Score_Sweeper] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Sweeper]), "Sweeper",
+        TRUE(), '2_DB_p90'[col_Score_Ball_Playing_Defender] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Ball_Playing_Defender]), "Ball-Playing Defender",
+        TRUE(), '2_DB_p90'[col_Score_Aerial_Dominant_Defender] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Aerial_Dominant_Defender]), "Aerial Dominant Defender",
+        TRUE(), '2_DB_p90'[col_Score_All_round_CB] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_All_round_CB]), "All round CB",
+        TRUE(), '2_DB_p90'[col_Score_Wing_Back] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Wing_Back]), "Wing-Back",
+        TRUE(), '2_DB_p90'[col_Score_Creative_Full_Back] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Creative_Full_Back]), "Creative Full-Back",
+        TRUE(), '2_DB_p90'[col_Score_Defensive_Full_Back] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Defensive_Full_Back]), "Defensive Full-Back",
+        TRUE(), '2_DB_p90'[col_Score_Deep_Lying_Playmaker] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Deep_Lying_Playmaker]), "Deep-Lying Playmaker",
+        TRUE(), '2_DB_p90'[col_Score_Destroyer] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Destroyer]), "Destroyer",
+        TRUE(), '2_DB_p90'[col_Score_Box_to_box] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Box_to_box]), "Box-to-box",
+        TRUE(), '2_DB_p90'[col_Score_Attacking_midfielder] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Attacking_midfielder]), "Attacking midfielder",
+        TRUE(), '2_DB_p90'[col_Score_Shadow_Striker] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Shadow_Striker]), "Shadow Striker",
+        TRUE(), '2_DB_p90'[col_Score_Enganche] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Enganche]), "Enganche",
+        TRUE(), '2_DB_p90'[col_Score_Wide_Midfielder] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Wide_Midfielder]), "Wide Midfielder",
+        TRUE(), '2_DB_p90'[col_Score_Wide_Creator] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Wide_Creator]), "Wide Creator",
+        TRUE(), '2_DB_p90'[col_Score_Dribbler] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Dribbler]), "Dribbler",
+        TRUE(), '2_DB_p90'[col_Score_Wide_Forward] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Wide_Forward]), "Wide Forward",
+        TRUE(), '2_DB_p90'[col_Score_Target_Man] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Target_Man]), "Target Man",
+        TRUE(), '2_DB_p90'[col_Score_Poacher] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_Poacher]), "Poacher",
+        TRUE(), '2_DB_p90'[col_Score_False_9] = best_score && NOT ISBLANK('2_DB_p90'[col_Score_False_9]), "False 9",
+        BLANK()
+    )
+)
+
+================================================================================
+
+// Columna calculada: rol y puntaje combinados
+col_Best_Role =
+IF(
+    ISBLANK('2_DB_p90'[col_Best_Role_Name]),
+    BLANK(),
+    '2_DB_p90'[col_Best_Role_Name] & " - " & FORMAT('2_DB_p90'[col_Best_Role_Score], "0.00")
+)
+
+================================================================================
+
+// Columna calculada: World Score (mejor rol * multiplicador de liga)
+col_World_Score =
+VAR mult = LOOKUPVALUE(
+               League_Multipliers[multiplier],
+               League_Multipliers[tournament_name], '2_DB_p90'[tournament_name],
+               1
+           )
+RETURN
+IF(
+    ISBLANK('2_DB_p90'[col_Best_Role_Score]),
+    BLANK(),
+    '2_DB_p90'[col_Best_Role_Score] * mult
+)
+
+================================================================================
+
+// Columna calculada: mejor rol con World Score
+col_Best_World_Role =
+IF(
+    ISBLANK('2_DB_p90'[col_Best_Role_Name]),
+    BLANK(),
+    '2_DB_p90'[col_Best_Role_Name] & " - " & FORMAT('2_DB_p90'[col_World_Score], "0.00")
+)

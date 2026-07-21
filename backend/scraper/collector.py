@@ -263,11 +263,18 @@ def run_league_pipeline(
     recalc_count = repo.recalculate_derived(conn)
     log("success", f"Recalculated {recalc_count} values")
 
-    log("success", f"Pipeline complete: {total_saved} downloaded, {enrich_count} enriched, {recalc_count} recalculated")
+    # ── Step 7: DAX Evaluations ───────────────────────────────────────────
+    from scraper.evaluator import evaluate_all_players
+    log("info", "Calculating player role evaluations...")
+    eval_count = evaluate_all_players(conn, log)
+    log("success", f"Saved {eval_count} role evaluations")
+
+    log("success", f"Pipeline complete: {total_saved} downloaded, {enrich_count} enriched, {recalc_count} recalculated, {eval_count} evaluated")
     return {
         "downloaded": total_saved,
         "enriched": enrich_count,
         "recalculated": recalc_count,
+        "evaluated": eval_count,
         "league": meta["tournament_name"],
     }
 

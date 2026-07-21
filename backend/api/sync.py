@@ -21,14 +21,14 @@ _ws_clients: set[WebSocket] = set()
 
 async def _broadcast(level: str, message: str) -> None:
     """Send a log message to all connected WebSocket clients."""
-    print(f"[WS BROADCAST] {level.upper()}: {message} to {len(_ws_clients)} clients")
+    print(f"[WS BROADCAST] {level.upper()}: {message} to {len(_ws_clients)} clients", flush=True)
     payload = {"level": level, "message": message}
     dead = set()
     for ws in _ws_clients:
         try:
             await ws.send_json(payload)
         except Exception as e:
-            print(f"[WS ERROR] Failed to send to {ws}: {e}")
+            print(f"[WS ERROR] Failed to send to {ws}: {e}", flush=True)
             dead.add(ws)
     _ws_clients -= dead
 

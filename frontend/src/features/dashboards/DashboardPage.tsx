@@ -22,18 +22,20 @@ export default function DashboardPage() {
   const fetchScatter = useCallback(async () => {
     setLoading(true)
     try {
-      const result = await getScatterData({
+      const filters: any = {
         metric_x: store.metricX,
         metric_y: store.metricY,
         position: store.position || undefined,
         top_n: store.topN,
-        age_min: store.ageMin,
-        age_max: store.ageMax,
-        minutes_min: store.minutesMin,
-        minutes_max: store.minutesMax,
         league: store.league || undefined,
         team: store.team || undefined,
-      })
+      }
+      if (store.ageMin != null && !isNaN(store.ageMin)) filters.age_min = store.ageMin
+      if (store.ageMax != null && !isNaN(store.ageMax)) filters.age_max = store.ageMax
+      if (store.minutesMin != null && !isNaN(store.minutesMin)) filters.minutes_min = store.minutesMin
+      if (store.minutesMax != null && !isNaN(store.minutesMax)) filters.minutes_max = store.minutesMax
+
+      const result = await getScatterData(filters)
       setScatterData(result)
     } catch {
       setScatterData(null)
@@ -143,7 +145,7 @@ export default function DashboardPage() {
   } : null
 
   return (
-    <div className="h-full flex flex-col p-6 gap-5 animate-fade-in overflow-hidden">
+    <div className="min-h-full flex flex-col gap-5 animate-fade-in overflow-hidden">
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Scouting Dashboards</h1>
@@ -181,10 +183,7 @@ export default function DashboardPage() {
             />
             <span className="text-xs w-8 text-right shrink-0" style={{ color: 'var(--color-text-secondary)' }}>{store.topN}</span>
           </div>
-          <div className="flex items-center gap-2 flex-1 min-w-[160px] max-w-[200px]">
-            <input type="number" placeholder="Age min" className="input-dark w-full min-w-0" value={store.ageMin ?? ''} onChange={(e) => store.setFilter('ageMin', e.target.value ? +e.target.value : undefined)} />
-            <input type="number" placeholder="max" className="input-dark w-full min-w-0" value={store.ageMax ?? ''} onChange={(e) => store.setFilter('ageMax', e.target.value ? +e.target.value : undefined)} />
-          </div>
+
           <div className="flex items-center gap-2 flex-1 min-w-[160px] max-w-[200px]">
             <input type="number" placeholder="Min '" className="input-dark w-full min-w-0" value={store.minutesMin ?? ''} onChange={(e) => store.setFilter('minutesMin', e.target.value ? +e.target.value : undefined)} />
             <input type="number" placeholder="max" className="input-dark w-full min-w-0" value={store.minutesMax ?? ''} onChange={(e) => store.setFilter('minutesMax', e.target.value ? +e.target.value : undefined)} />
@@ -212,9 +211,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Right panel: Pitch + Radar */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 min-h-0">
           {/* Pitch Selector */}
-          <div className="glass-card p-4">
+          <div className="glass-card p-4 shrink-0">
             <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>Position Filter</h3>
             <PitchSelector selected={store.position} onSelect={store.setPosition} />
           </div>

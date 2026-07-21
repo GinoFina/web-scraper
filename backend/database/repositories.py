@@ -141,20 +141,25 @@ def get_players_paginated(
     # Data
     offset = (page - 1) * page_size
     data_sql = f"""
-        SELECT
-            p.player_id, p.name, p.age, COALESCE(s.team_name, p.team) as team, s.team_id as team_id, p.nationality,
-            p.country_alpha2, p.position, p.specific_position,
-            s.minutes_played, s.goals, s.assists, s.rating, s.appearances,
-            s.tournament_name, s.season_name,
-            s.key_passes, s.big_chances_created, s.accurate_passes_pct,
-            s.dribbles_won, s.dribbles_won_pct,
-            s.tackles, s.interceptions, s.aerial_duels_won_pct,
-            e.role, e.role_score, e.league_score, e.world_score
-        FROM players p
-        LEFT JOIN season_stats s ON s.player_id = p.player_id
-        LEFT JOIN player_evaluations e ON e.stats_id = s.id
-        WHERE {where}
-        ORDER BY {order_col} {sort_direction} NULLS LAST
+        WITH RankedStats AS (
+            SELECT
+                p.player_id, p.name, p.age, COALESCE(s.team_name, p.team) as team, s.team_id as team_id, p.nationality,
+                p.country_alpha2, p.position, p.specific_position,
+                s.minutes_played, s.goals, s.assists, s.rating, s.appearances,
+                s.tournament_name, s.season_name,
+                s.key_passes, s.big_chances_created, s.accurate_passes_pct,
+                s.dribbles_won, s.dribbles_won_pct,
+                s.tackles, s.interceptions, s.aerial_duels_won_pct,
+                e.role, e.role_score, e.league_score, e.world_score,
+                ROW_NUMBER() OVER (PARTITION BY p.player_id ORDER BY s.season_year DESC, s.fetched_at DESC) as rn
+            FROM players p
+            LEFT JOIN season_stats s ON s.player_id = p.player_id
+            LEFT JOIN player_evaluations e ON e.stats_id = s.id
+            WHERE {where}
+        )
+        SELECT * FROM RankedStats
+        WHERE rn = 1
+        ORDER BY {sort_by} {sort_direction} NULLS LAST
         LIMIT ? OFFSET ?
     """
     rows = conn.execute(data_sql, params + [page_size, offset]).fetchall()

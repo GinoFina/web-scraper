@@ -79,7 +79,7 @@ export default function SyncPage() {
   }
 
   return (
-    <div className="h-full flex flex-col p-6 gap-5 animate-fade-in">
+    <div className="min-h-full flex flex-col gap-5 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

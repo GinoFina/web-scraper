@@ -24,7 +24,7 @@ interface PlayerFiltersState {
 
 const defaults = {
   page: 1,
-  pageSize: 10000,
+  pageSize: 200,
   name: '',
   position: '',
   specificPosition: '',

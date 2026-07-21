@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { getPlayers, getPositions, getLeagues, getNationalities, getTeams, getSeasons } from '../../services/api'
 import { usePlayerStore } from '../../store/playerStore'
 
@@ -12,7 +12,8 @@ interface FilterOptions {
 
 export default function ExplorerPage() {
   const store = usePlayerStore()
-  const [data, setData] = useState<{ data: any[]; total: number; total_pages: number }>({
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+  const [data, setData] = useState<{ data: any[]; total: number; total_pages: number; page: number }>({
     data: [],
     total: 0,
     total_pages: 1,
@@ -39,7 +40,7 @@ export default function ExplorerPage() {
   const fetchPlayers = useCallback(async () => {
     setLoading(true)
     try {
-      const result = await getPlayers({
+      const filters: any = {
         page: store.page,
         page_size: store.pageSize,
         name: store.name || undefined,
@@ -49,16 +50,25 @@ export default function ExplorerPage() {
         team: store.team || undefined,
         league: store.league || undefined,
         season: store.season || undefined,
-        age_min: store.ageMin,
-        age_max: store.ageMax,
-        minutes_min: store.minutesMin,
-        minutes_max: store.minutesMax,
         sort_by: store.sortBy,
         sort_dir: store.sortDir,
+      }
+      if (store.ageMin != null && !isNaN(store.ageMin)) filters.age_min = store.ageMin
+      if (store.ageMax != null && !isNaN(store.ageMax)) filters.age_max = store.ageMax
+      if (store.minutesMin != null && !isNaN(store.minutesMin)) filters.minutes_min = store.minutesMin
+      if (store.minutesMax != null && !isNaN(store.minutesMax)) filters.minutes_max = store.minutesMax
+
+      const result = await getPlayers(filters)
+      setData(prev => {
+        if (store.page === 1) return result
+        return {
+          ...result,
+          data: [...prev.data, ...result.data]
+        }
       })
-      setData(result)
-    } catch {
-      setData({ data: [], total: 0, total_pages: 1 })
+    } catch (e: any) {
+      console.error(e)
+      if (store.page === 1) setData({ data: [], total: 0, total_pages: 1, page: 1, error: e.message } as any)
     }
     setLoading(false)
   }, [store])
@@ -73,6 +83,16 @@ export default function ExplorerPage() {
     } else {
       store.setFilter('sortBy', col)
       store.setFilter('sortDir', 'asc')
+    }
+  }
+
+  const handleScroll = () => {
+    if (!tableContainerRef.current || loading) return
+    const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current
+    if (scrollTop + clientHeight >= scrollHeight - 50) {
+      if (store.page < data.total_pages) {
+        store.setPage(store.page + 1)
+      }
     }
   }
 
@@ -100,7 +120,7 @@ export default function ExplorerPage() {
   ]
 
   return (
-    <div className="h-full flex flex-col p-6 gap-5 animate-fade-in">
+    <div className="min-h-full flex flex-col gap-5 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -229,7 +249,7 @@ export default function ExplorerPage() {
       </div>
 
       {/* Table */}
-      <div className="glass-card flex-1 overflow-auto">
+      <div className="glass-card flex-1 overflow-auto" ref={tableContainerRef} onScroll={handleScroll}>
         <table className="data-table">
           <thead>
             <tr>
@@ -241,10 +261,16 @@ export default function ExplorerPage() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {loading && store.page === 1 ? (
               <tr>
                 <td colSpan={columns.length} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
                   Loading...
+                </td>
+              </tr>
+            ) : (data as any).error ? (
+              <tr>
+                <td colSpan={columns.length} className="text-center py-12 text-red-500 font-bold">
+                  Error: {(data as any).error}
                 </td>
               </tr>
             ) : data.data.length === 0 ? (
@@ -280,6 +306,13 @@ export default function ExplorerPage() {
                   <td>{p.world_score ? Number(p.world_score).toFixed(2) : '—'}</td>
                 </tr>
               ))
+            )}
+            {loading && store.page > 1 && (
+              <tr>
+                <td colSpan={columns.length} className="text-center py-4 text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>
+                  Loading more...
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

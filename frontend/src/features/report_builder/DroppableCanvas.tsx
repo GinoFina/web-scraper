@@ -6,6 +6,8 @@ import { useReportStore, DroppedItem } from '../../store/reportStore'
 import ReportPlayerCard from './components/ReportPlayerCard'
 import ReportRadarChart from './components/ReportRadarChart'
 import ReportTextBlock from './components/ReportTextBlock'
+import ReportStatsTable from './components/ReportStatsTable'
+import ReportScatterPlot from './components/ReportScatterPlot'
 
 function SortableItem({ item, playerId }: { item: DroppedItem, playerId: number | null }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
@@ -24,6 +26,10 @@ function SortableItem({ item, playerId }: { item: DroppedItem, playerId: number 
         return playerId ? <ReportPlayerCard playerId={playerId} /> : <div className="p-4 border border-dashed rounded text-center">Please select a player first</div>
       case 'RadarChart':
         return playerId ? <ReportRadarChart playerId={playerId} /> : <div className="p-4 border border-dashed rounded text-center">Please select a player first</div>
+      case 'ScatterPlot':
+        return playerId ? <ReportScatterPlot playerId={playerId} /> : <div className="p-4 border border-dashed rounded text-center">Please select a player first</div>
+      case 'StatsTable':
+        return playerId ? <ReportStatsTable playerId={playerId} /> : <div className="p-4 border border-dashed rounded text-center">Please select a player first</div>
       case 'TextBlock':
         return <ReportTextBlock id={item.id} content={item.content || ''} />
       default:

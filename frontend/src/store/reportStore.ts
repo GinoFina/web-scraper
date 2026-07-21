@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type ComponentType = 'RadarChart' | 'BarChart' | 'PlayerCard' | 'TextBlock' | 'StatsTable' | 'PitchMap'
+export type ComponentType = 'RadarChart' | 'ScatterPlot' | 'PlayerCard' | 'TextBlock' | 'StatsTable' | 'PitchMap'
 
 export interface DroppedItem {
   id: string
