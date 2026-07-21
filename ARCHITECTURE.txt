@@ -1,0 +1,125 @@
+===============================================================================
+SOFASCORE SCOUTING APP - SYSTEM ARCHITECTURE (V2)
+===============================================================================
+
+1. PROJECT OVERVIEW
+-------------------------------------------------------------------------------
+Desktop application for a sports scouting agency. Extracts massive statistical 
+data from the Sofascore API, processes it mathematically to evaluate specific 
+profiles (Roles), and generates customizable PDF visual reports.
+
+Migrated from a monolithic Python script (sofascore_collector.py) to a 
+modern full-stack architecture.
+
+2. TECHNOLOGY STACK
+-------------------------------------------------------------------------------
+- Backend / API Layer: Python 3.11+ with FastAPI (local REST + WebSocket).
+  Virtual environment: backend/.venv/
+- Data Processing:     Pandas & Numpy (percentiles, scoring, normalization).
+- Scraping Engine:     curl_cffi (TLS/Cloudflare fingerprint evasion).
+- Database:            SQLite3 (local, WAL mode, normalized schema).
+- Frontend:            React (Vite) + TailwindCSS v4 + TypeScript.
+- Visualizations:      Apache ECharts (via echarts-for-react).
+- Drag & Drop:         @dnd-kit/core (Report Builder, future).
+- State Management:    Zustand.
+- Packaging:           Tauri (deferred to future iteration).
+
+3. DIRECTORY STRUCTURE
+-------------------------------------------------------------------------------
+
+project_root/
+│
+├── backend/                        # Python FastAPI application
+│   ├── .venv/                      # Python virtual environment (local)
+│   ├── main.py                     # FastAPI entry point + CORS + routers
+│   ├── requirements.txt            # pip dependencies
+│   ├── __init__.py
+│   ├── api/                        # REST API routers
+│   │   ├── players.py              # GET /api/players, /api/players/{id}
+│   │   ├── analytics.py            # GET /api/analytics/scatter, /radar/{id}
+│   │   ├── sync.py                 # POST /api/sync/league, /update-all, WS
+│   │   ├── reports.py              # GET /api/reports/player-card/{id}, /proxy
+│   │   └── filters.py              # GET /api/filters/* (dropdowns)
+│   ├── core/                       # Business logic & math
+│   │   ├── analytics.py            # Pandas: percentiles, averages, scores
+│   │   └── roles.json              # Role weight definitions (placeholder)
+│   ├── scraper/                    # Sofascore data extraction
+│   │   ├── client.py               # curl_cffi wrapper with impersonation
+│   │   ├── collector.py            # Pipeline: league → enrich → recalculate
+│   │   └── config.py               # Constants, tournament maps, multipliers
+│   └── database/                   # SQLite layer
+│       ├── connection.py           # Singleton connection, WAL, schema init
+│       ├── schema.sql              # Full DDL
+│       └── repositories.py         # CRUD operations, pagination, filters
+│
+├── frontend/                       # React + Vite + TailwindCSS
+│   ├── index.html
+│   ├── vite.config.ts              # Dev server + API proxy
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── src/
+│       ├── main.tsx                # React entry point
+│       ├── App.tsx                 # Layout: Sidebar + Router
+│       ├── index.css               # Design system (dark theme, glass, anims)
+│       ├── components/
+│       │   └── Sidebar.tsx         # Collapsible navigation sidebar
+│       ├── features/
+│       │   ├── explorer/
+│       │   │   └── ExplorerPage.tsx # Data table + filters + pagination
+│       │   ├── dashboards/
+│       │   │   ├── DashboardPage.tsx # Scatter + radar + controls
+│       │   │   └── PitchSelector.tsx # SVG pitch with clickable positions
+│       │   ├── report_builder/
+│       │   │   └── ReportBuilderPage.tsx # DnD canvas (structural placeholder)
+│       │   └── sync/
+│       │       └── SyncPage.tsx     # League management + WS terminal
+│       ├── services/
+│       │   └── api.ts              # Axios + WebSocket API client
+│       └── store/
+│           ├── playerStore.ts      # Zustand: explorer filters/pagination
+│           └── dashboardStore.ts   # Zustand: chart metrics/selections
+│
+├── ARCHITECTURE.txt                # This file
+├── schema.dbml                     # Relational schema reference
+└── sofascore_collector.py          # Legacy monolithic script (reference only)
+
+4. RUNNING THE APPLICATION
+-------------------------------------------------------------------------------
+
+  # Backend (from project root):
+  cd backend
+  .venv\Scripts\activate            # Windows
+  uvicorn main:app --reload --port 8000
+
+  # Frontend (from project root):
+  cd frontend
+  npm run dev                        # Starts on http://localhost:5173
+
+  The Vite dev server proxies /api/* and /ws/* to the FastAPI backend.
+
+5. SCRAPER PIPELINE
+-------------------------------------------------------------------------------
+When a league URL is submitted via the Sync Panel:
+  1. league download: Fetches all player stats page by page from Sofascore API
+  2. enrich: Fills in missing specific_position, nationality, age via player endpoints
+  3. recalculate: Derives computed fields (percentages, totals) from raw data
+  
+This runs as a single atomic pipeline. WebSocket broadcasts real-time logs.
+
+6. DATA PROCESSING
+-------------------------------------------------------------------------------
+All mathematical operations are handled by Pandas/Numpy in backend/core/:
+  - Percentile ranking within position groups
+  - Min-max normalization (0-1)
+  - Weighted role scoring based on roles.json definitions
+  - League quality multiplier adjustment
+  - Positional average computation for chart baselines
+
+CRITICAL RULE: Frontend never touches the DB. It only consumes JSON from FastAPI.
+
+7. ANTI-BAN STRATEGY
+-------------------------------------------------------------------------------
+All scraping uses curl_cffi with Chrome TLS fingerprint impersonation.
+Rate limiting (configurable delay between requests) is enforced.
+The scraper runs in a background thread via asyncio.to_thread() to avoid
+blocking the FastAPI event loop.

@@ -1,0 +1,79 @@
+{
+  "Creative Full-Back": {
+    "description": "Lateral que contribuye en creación ofensiva",
+    "positions": ["DL", "DR", "WBL", "WBR"],
+    "min_minutes": 200,
+    "metrics": {
+      "key_passes": 0.20,
+      "accurate_crosses_pct": 0.15,
+      "big_chances_created": 0.10,
+      "dribbles_won": 0.10,
+      "accurate_long_balls_pct": 0.10,
+      "tackles": 0.10,
+      "interceptions": 0.10,
+      "aerial_duels_won_pct": 0.05,
+      "accurate_passes_pct": 0.10
+    }
+  },
+  "Ball-Playing Centre-Back": {
+    "description": "Central con buena salida de balón",
+    "positions": ["DC"],
+    "min_minutes": 200,
+    "metrics": {
+      "accurate_passes_pct": 0.20,
+      "accurate_long_balls_pct": 0.15,
+      "interceptions": 0.15,
+      "tackles": 0.10,
+      "aerial_duels_won_pct": 0.15,
+      "clearances": 0.10,
+      "ground_duels_won_pct": 0.10,
+      "blocked_shots": 0.05
+    }
+  },
+  "Progressive Midfielder": {
+    "description": "Mediocampista con capacidad de progresión",
+    "positions": ["DMC", "MC", "AMC"],
+    "min_minutes": 200,
+    "metrics": {
+      "key_passes": 0.15,
+      "accurate_passes_pct": 0.15,
+      "accurate_long_balls_pct": 0.10,
+      "big_chances_created": 0.10,
+      "dribbles_won": 0.10,
+      "tackles": 0.10,
+      "interceptions": 0.10,
+      "goals": 0.10,
+      "assists": 0.10
+    }
+  },
+  "Goal Scorer": {
+    "description": "Delantero goleador puro",
+    "positions": ["FW", "CF", "SS"],
+    "min_minutes": 200,
+    "metrics": {
+      "goals": 0.25,
+      "shots_on_target": 0.15,
+      "big_chances_missed": -0.10,
+      "aerial_duels_won_pct": 0.10,
+      "dribbles_won": 0.10,
+      "assists": 0.10,
+      "key_passes": 0.10,
+      "rating": 0.10
+    }
+  },
+  "Creative Winger": {
+    "description": "Extremo creador de juego",
+    "positions": ["AML", "AMR", "ML", "MR"],
+    "min_minutes": 200,
+    "metrics": {
+      "key_passes": 0.15,
+      "assists": 0.15,
+      "big_chances_created": 0.15,
+      "dribbles_won": 0.15,
+      "accurate_crosses_pct": 0.10,
+      "goals": 0.10,
+      "shots_on_target": 0.10,
+      "accurate_passes_pct": 0.10
+    }
+  }
+}

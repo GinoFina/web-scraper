@@ -1,0 +1,127 @@
+import { useEffect, useState } from 'react'
+import { DndContext, DragEndEvent, DragOverlay } from '@dnd-kit/core'
+import { restrictToWindowEdges } from '@dnd-kit/modifiers'
+import { getPlayers } from '../../services/api'
+import { useReportStore, ComponentType } from '../../store/reportStore'
+
+import DraggablePaletteItem from './DraggablePaletteItem'
+import DroppableCanvas from './DroppableCanvas'
+
+const PALETTE_ITEMS: { type: ComponentType, icon: string, label: string, desc: string }[] = [
+  { type: 'PlayerCard', icon: '👤', label: 'Player Card', desc: 'Photo, name, team, position' },
+  { type: 'RadarChart', icon: '📊', label: 'Radar Chart', desc: 'Percentile radar comparison' },
+  { type: 'TextBlock', icon: '📝', label: 'Text Block', desc: 'Custom text or notes' },
+]
+
+export default function ReportBuilderPage() {
+  const { playerId, setPlayerId, addItem, moveItem, items } = useReportStore()
+  const [players, setPlayers] = useState<{ id: number, name: string, club: string }[]>([])
+  const [activeDragType, setActiveDragType] = useState<ComponentType | null>(null)
+
+  useEffect(() => {
+    // Fetch a small list of players for the dropdown
+    getPlayers(1, 100, undefined, undefined, undefined, undefined, 'name', 'asc')
+      .then(res => setPlayers(res.data))
+      .catch(() => {})
+  }, [])
+
+  const handleDragStart = (event: any) => {
+    if (event.active.id.toString().startsWith('palette-')) {
+      setActiveDragType(event.active.data.current?.type)
+    }
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragType(null)
+    const { active, over } = event
+
+    if (!over) return
+
+    // Dropping a palette item onto the canvas
+    if (active.id.toString().startsWith('palette-') && over.id === 'canvas') {
+      const type = active.data.current?.type as ComponentType
+      if (type) addItem(type)
+      return
+    }
+
+    // Reordering items on the canvas
+    if (!active.id.toString().startsWith('palette-') && items.some(i => i.id === over.id)) {
+      const oldIndex = items.findIndex(i => i.id === active.id)
+      const newIndex = items.findIndex(i => i.id === over.id)
+      if (oldIndex !== -1 && newIndex !== -1) {
+        moveItem(oldIndex, newIndex)
+      }
+    }
+  }
+
+  return (
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd} modifiers={[restrictToWindowEdges]}>
+      <div className="h-full flex flex-col p-6 gap-5 animate-fade-in print:p-0">
+        
+        {/* Header - Hidden on print */}
+        <div className="flex justify-between items-end print:hidden">
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Report Builder</h1>
+            <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+              Drag & drop components to build PDF scouting reports
+            </p>
+          </div>
+          
+          <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-2">
+              <label className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Target Player:</label>
+              <select 
+                className="input-dark p-2 text-sm w-64"
+                value={playerId || ''}
+                onChange={(e) => setPlayerId(e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">-- Select a Player --</option>
+                {players.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.club || 'No Club'})</option>
+                ))}
+              </select>
+            </div>
+            
+            <button 
+              className="btn-primary text-sm px-4 py-2 flex items-center gap-2"
+              onClick={() => window.print()}
+              disabled={items.length === 0}
+            >
+              🖨️ Export PDF
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 grid grid-cols-[280px_1fr] gap-5 min-h-0 print:block">
+          
+          {/* Component Palette - Hidden on print */}
+          <div className="glass-card p-4 flex flex-col gap-3 overflow-auto print:hidden">
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              Components
+            </h3>
+            {PALETTE_ITEMS.map((comp) => (
+              <DraggablePaletteItem key={comp.type} {...comp} />
+            ))}
+          </div>
+
+          {/* A4 Canvas */}
+          <div className="overflow-auto print:overflow-visible flex items-start justify-center pb-8 print:pb-0">
+            <DroppableCanvas />
+          </div>
+
+        </div>
+      </div>
+
+      <DragOverlay>
+        {activeDragType ? (
+          <div className="glass-card-interactive p-3 flex items-start gap-3 opacity-80 cursor-grabbing bg-[var(--color-surface-800)] rounded-lg shadow-xl w-[250px]">
+            <span className="text-xl">{PALETTE_ITEMS.find(p => p.type === activeDragType)?.icon}</span>
+            <div>
+              <p className="text-sm font-medium text-white">{PALETTE_ITEMS.find(p => p.type === activeDragType)?.label}</p>
+            </div>
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
+  )
+}
