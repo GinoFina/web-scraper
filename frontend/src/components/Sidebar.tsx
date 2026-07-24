@@ -7,7 +7,7 @@ const navItems = [
     label: 'Explorer',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M3 6h18M3 18h18" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
     ),
   },
@@ -16,10 +16,7 @@ const navItems = [
     label: 'Dashboards',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.1-1.3 2-3 2s-3-.9-3-2 1.3-2 3-2 3 .9 3 2zm12-3c0 1.1-1.3 2-3 2s-3-.9-3-2 1.3-2 3-2 3 .9 3 2z" />
-        <circle cx="7" cy="7" r="2" />
-        <circle cx="17" cy="11" r="2" />
-        <path d="M7 7l10 4" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8M12 17v4M3 4h18M4 4v10a2 2 0 002 2h12a2 2 0 002-2V4" />
       </svg>
     ),
   },
@@ -57,17 +54,19 @@ export default function Sidebar() {
       }}
     >
       {/* Brand */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b" style={{ borderColor: 'var(--color-border)' }}>
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
-          style={{ background: 'var(--color-accent-primary)' }}
-        >
-          DF
-        </div>
-        {!collapsed && (
-          <span className="text-sm font-semibold tracking-tight animate-fade-in" style={{ color: 'var(--color-text-primary)' }}>
-            DF Agency
-          </span>
+      <div className={`flex items-center h-16 border-b transition-all duration-300 ${collapsed ? 'justify-center' : 'px-4 justify-start'}`} style={{ borderColor: 'var(--color-border)' }}>
+        {collapsed ? (
+          <img
+            src="/favicon.jpg"
+            alt="DF Agency Icon"
+            className="w-8 h-8 rounded-lg object-cover shrink-0"
+          />
+        ) : (
+          <img
+            src="/logo-sin-fondo.png"
+            alt="DF Agency Logo"
+            className="h-10 w-auto max-w-[170px] object-contain animate-fade-in"
+          />
         )}
       </div>
 

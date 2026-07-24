@@ -94,8 +94,8 @@ export async function getRadarData(playerId: number, metrics?: string) {
 }
 
 // ── Sync ───────────────────────────────────────────────────────────────────
-export async function addLeague(url: string, accumulation: string = 'total') {
-  const { data } = await api.post('/api/sync/league', { url, accumulation })
+export async function addLeague(url: string) {
+  const { data } = await api.post('/api/sync/league', { url })
   return data
 }
 

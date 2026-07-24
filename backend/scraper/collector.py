@@ -215,8 +215,8 @@ def run_league_pipeline(
             for entry in results:
                 player_raw = entry.get("player", {})
                 team_raw = entry.get("team", {})
-                if team_raw and not player_raw.get("team"):
-                    player_raw["team"] = team_raw
+                if "team" in player_raw:
+                    del player_raw["team"]
 
                 player_id = player_raw.get("id")
                 if not player_id:
@@ -258,12 +258,17 @@ def run_league_pipeline(
     enrich_count = _enrich_players(conn, client, accumulation, log)
     log("success", f"Enriched {enrich_count} players")
 
-    # ── Step 6: Recalculate derived fields ────────────────────────────────
+    # ── Step 6: Generate Total Stats ──────────────────────────────────────
+    log("info", "Generating total consolidated stats...")
+    repo.generate_total_stats(conn)
+    log("success", "Generated Total stats")
+
+    # ── Step 7: Recalculate derived fields ────────────────────────────────
     log("info", "Recalculating derived fields...")
     recalc_count = repo.recalculate_derived(conn)
     log("success", f"Recalculated {recalc_count} values")
 
-    # ── Step 7: DAX Evaluations ───────────────────────────────────────────
+    # ── Step 8: DAX Evaluations ───────────────────────────────────────────
     from scraper.evaluator import evaluate_all_players
     log("info", "Calculating player role evaluations...")
     eval_count = evaluate_all_players(conn, log)
@@ -303,6 +308,13 @@ def _enrich_players(
     for player_id, name, tournament_id, season_id in rows:
         try:
             info = client.get_player_info(player_id)
+
+            # Fallback to prevent infinite enrichment loops if API genuinely lacks data
+            if not info.get("positionsDetailed"):
+                pos = info.get("position", "")
+                info["positionsDetailed"] = [pos] if pos else ["UNKNOWN"]
+            if not info.get("country") or not info["country"].get("name"):
+                info["country"] = {"name": "Unknown", "alpha2": "??"}
 
             try:
                 ind_stats = client.get_player_stats(player_id, tournament_id, season_id)

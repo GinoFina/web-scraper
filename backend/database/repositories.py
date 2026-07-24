@@ -37,7 +37,7 @@ def upsert_player(conn: sqlite3.Connection, player_id: int, info: dict) -> None:
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(player_id) DO UPDATE SET
             name              = excluded.name,
-            team              = excluded.team,
+            team              = COALESCE(NULLIF(excluded.team,''), team),
             team_id           = COALESCE(excluded.team_id, team_id),
             nationality       = COALESCE(NULLIF(excluded.nationality,''), nationality),
             country_alpha2    = COALESCE(NULLIF(excluded.country_alpha2,''), country_alpha2),
@@ -333,6 +333,131 @@ def upsert_stats(
             source, raw_json,
         ),
     )
+
+
+def generate_total_stats(conn: sqlite3.Connection):
+    """
+    Generates or updates a 'Total' aggregated row for every player
+    that consolidates all their season stats across all leagues.
+    """
+    sql = """
+    INSERT INTO season_stats (
+        player_id, tournament_id, tournament_name, season_id, season_name, season_year,
+        team_id, team_name, accumulation,
+        appearances, minutes_played, goals, assists, rating, penalty_goals,
+        accurate_passes, total_passes, accurate_passes_pct, key_passes, big_chances_created,
+        accurate_long_balls, total_long_balls, accurate_long_balls_pct,
+        accurate_crosses, total_crosses, accurate_crosses_pct,
+        total_shots, shots_on_target, shots_off_target, blocked_scoring_attempt, big_chances_missed,
+        dribbles_won, dribbles_attempted, dribbles_won_pct,
+        aerial_duels_won, aerial_duels_total, aerial_duels_won_pct,
+        ground_duels_won, ground_duels_total, ground_duels_won_pct,
+        tackles, interceptions, clearances, blocked_shots, dispossessed, offsides, possession_lost,
+        total_duels_won, total_duels_won_pct,
+        saves, clean_sheets, saves_inside_box, saves_outside_box,
+        goals_conceded, goals_conceded_inside_box, goals_conceded_outside_box,
+        penalties_saved, punches, high_claims, runs_out, successful_runs_out,
+        source, raw_json, fetched_at
+    )
+    SELECT
+        s.player_id,
+        0 as tournament_id,
+        'Total' as tournament_name,
+        0 as season_id,
+        'Total' as season_name,
+        'Total' as season_year,
+        p.team_id,
+        p.team as team_name,
+        'total' as accumulation,
+        SUM(appearances), SUM(minutes_played), SUM(goals), SUM(assists),
+        SUM(rating * minutes_played) / NULLIF(SUM(minutes_played), 0), SUM(penalty_goals),
+        SUM(accurate_passes), SUM(total_passes), 
+        CAST(SUM(accurate_passes) AS FLOAT) / NULLIF(SUM(total_passes), 0) * 100,
+        SUM(key_passes), SUM(big_chances_created),
+        SUM(accurate_long_balls), SUM(total_long_balls), 
+        CAST(SUM(accurate_long_balls) AS FLOAT) / NULLIF(SUM(total_long_balls), 0) * 100,
+        SUM(accurate_crosses), SUM(total_crosses), 
+        CAST(SUM(accurate_crosses) AS FLOAT) / NULLIF(SUM(total_crosses), 0) * 100,
+        SUM(total_shots), SUM(shots_on_target), SUM(shots_off_target), SUM(blocked_scoring_attempt), SUM(big_chances_missed),
+        SUM(dribbles_won), SUM(dribbles_attempted), 
+        CAST(SUM(dribbles_won) AS FLOAT) / NULLIF(SUM(dribbles_attempted), 0) * 100,
+        SUM(aerial_duels_won), SUM(aerial_duels_total), 
+        CAST(SUM(aerial_duels_won) AS FLOAT) / NULLIF(SUM(aerial_duels_total), 0) * 100,
+        SUM(ground_duels_won), SUM(ground_duels_total), 
+        CAST(SUM(ground_duels_won) AS FLOAT) / NULLIF(SUM(ground_duels_total), 0) * 100,
+        SUM(tackles), SUM(interceptions), SUM(clearances), SUM(blocked_shots), SUM(dispossessed), SUM(offsides), SUM(possession_lost),
+        SUM(total_duels_won), 
+        CAST(SUM(total_duels_won) AS FLOAT) / NULLIF(SUM(COALESCE(aerial_duels_total,0) + COALESCE(ground_duels_total,0)), 0) * 100,
+        SUM(saves), SUM(clean_sheets), SUM(saves_inside_box), SUM(saves_outside_box),
+        SUM(goals_conceded), SUM(goals_conceded_inside_box), SUM(goals_conceded_outside_box),
+        SUM(penalties_saved), SUM(punches), SUM(high_claims), SUM(runs_out), SUM(successful_runs_out),
+        'aggregated', '{}', datetime('now')
+    FROM season_stats s
+    JOIN players p ON p.player_id = s.player_id
+    WHERE s.season_name != 'Total'
+    GROUP BY s.player_id
+    ON CONFLICT(player_id, tournament_id, season_id, accumulation) DO UPDATE SET
+        tournament_name = excluded.tournament_name,
+        season_name = excluded.season_name,
+        season_year = excluded.season_year,
+        team_id = excluded.team_id,
+        team_name = excluded.team_name,
+        appearances = excluded.appearances,
+        minutes_played = excluded.minutes_played,
+        goals = excluded.goals,
+        assists = excluded.assists,
+        rating = excluded.rating,
+        penalty_goals = excluded.penalty_goals,
+        accurate_passes = excluded.accurate_passes,
+        total_passes = excluded.total_passes,
+        accurate_passes_pct = excluded.accurate_passes_pct,
+        key_passes = excluded.key_passes,
+        big_chances_created = excluded.big_chances_created,
+        accurate_long_balls = excluded.accurate_long_balls,
+        total_long_balls = excluded.total_long_balls,
+        accurate_long_balls_pct = excluded.accurate_long_balls_pct,
+        accurate_crosses = excluded.accurate_crosses,
+        total_crosses = excluded.total_crosses,
+        accurate_crosses_pct = excluded.accurate_crosses_pct,
+        total_shots = excluded.total_shots,
+        shots_on_target = excluded.shots_on_target,
+        shots_off_target = excluded.shots_off_target,
+        blocked_scoring_attempt = excluded.blocked_scoring_attempt,
+        big_chances_missed = excluded.big_chances_missed,
+        dribbles_won = excluded.dribbles_won,
+        dribbles_attempted = excluded.dribbles_attempted,
+        dribbles_won_pct = excluded.dribbles_won_pct,
+        aerial_duels_won = excluded.aerial_duels_won,
+        aerial_duels_total = excluded.aerial_duels_total,
+        aerial_duels_won_pct = excluded.aerial_duels_won_pct,
+        ground_duels_won = excluded.ground_duels_won,
+        ground_duels_total = excluded.ground_duels_total,
+        ground_duels_won_pct = excluded.ground_duels_won_pct,
+        tackles = excluded.tackles,
+        interceptions = excluded.interceptions,
+        clearances = excluded.clearances,
+        blocked_shots = excluded.blocked_shots,
+        dispossessed = excluded.dispossessed,
+        offsides = excluded.offsides,
+        possession_lost = excluded.possession_lost,
+        total_duels_won = excluded.total_duels_won,
+        total_duels_won_pct = excluded.total_duels_won_pct,
+        saves = excluded.saves,
+        clean_sheets = excluded.clean_sheets,
+        saves_inside_box = excluded.saves_inside_box,
+        saves_outside_box = excluded.saves_outside_box,
+        goals_conceded = excluded.goals_conceded,
+        goals_conceded_inside_box = excluded.goals_conceded_inside_box,
+        goals_conceded_outside_box = excluded.goals_conceded_outside_box,
+        penalties_saved = excluded.penalties_saved,
+        punches = excluded.punches,
+        high_claims = excluded.high_claims,
+        runs_out = excluded.runs_out,
+        successful_runs_out = excluded.successful_runs_out,
+        fetched_at = excluded.fetched_at;
+    """
+    conn.execute(sql)
+    conn.commit()
 
 
 def get_all_stats_as_dicts(conn: sqlite3.Connection, accumulation: str = "total") -> list[dict]:

@@ -11,7 +11,6 @@ export default function SyncPage() {
   const [leagues, setLeagues] = useState<any[]>([])
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [url, setUrl] = useState('')
-  const [accumulation, setAccumulation] = useState('total')
   const [syncing, setSyncing] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
@@ -30,14 +29,28 @@ export default function SyncPage() {
 
   // WebSocket connection
   useEffect(() => {
-    const ws = createSyncWs((data) => {
-      setLogs((prev) => [
-        ...prev,
-        { ...data, timestamp: new Date().toLocaleTimeString() },
-      ])
-    })
-    wsRef.current = ws
-    return () => { ws.close() }
+    let ws: WebSocket
+    const connect = () => {
+      ws = createSyncWs((data) => {
+        setLogs((prev) => [
+          ...prev,
+          { ...data, timestamp: new Date().toLocaleTimeString() },
+        ])
+      })
+      ws.onclose = () => {
+        // Auto-reconnect if connection is lost
+        setTimeout(connect, 3000)
+      }
+      wsRef.current = ws
+    }
+    connect()
+    
+    return () => {
+      if (ws) {
+        ws.onclose = null // prevent reconnect on unmount
+        ws.close()
+      }
+    }
   }, [])
 
   // Auto-scroll terminal
@@ -52,7 +65,7 @@ export default function SyncPage() {
     setSyncing(true)
     setLogs((prev) => [...prev, { level: 'info', message: `Starting pipeline for: ${url}`, timestamp: new Date().toLocaleTimeString() }])
     try {
-      await addLeague(url.trim(), accumulation)
+      await addLeague(url.trim())
       setUrl('')
       await fetchLeagues()
     } catch (err: any) {
@@ -123,11 +136,6 @@ export default function SyncPage() {
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddLeague()}
           />
-          <select className="input-dark w-32" value={accumulation} onChange={(e) => setAccumulation(e.target.value)}>
-            <option value="total">Total</option>
-            <option value="perGame">Per Game</option>
-            <option value="per90">Per 90</option>
-          </select>
           <button className="btn-primary" onClick={handleAddLeague} disabled={syncing || !url.trim()}>
             {syncing ? 'Syncing...' : 'Add & Sync'}
           </button>

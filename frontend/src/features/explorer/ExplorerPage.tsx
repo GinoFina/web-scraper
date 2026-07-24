@@ -79,10 +79,10 @@ export default function ExplorerPage() {
 
   const handleSort = (col: string) => {
     if (store.sortBy === col) {
-      store.setFilter('sortDir', store.sortDir === 'asc' ? 'desc' : 'asc')
+      store.setFilter('sortDir', store.sortDir === 'desc' ? 'asc' : 'desc')
     } else {
       store.setFilter('sortBy', col)
-      store.setFilter('sortDir', 'asc')
+      store.setFilter('sortDir', 'desc')
     }
   }
 
@@ -99,6 +99,23 @@ export default function ExplorerPage() {
   const sortIcon = (col: string) => {
     if (store.sortBy !== col) return ''
     return store.sortDir === 'asc' ? ' ↑' : ' ↓'
+  }
+
+  const formatStat = (val: number | undefined, player: any) => {
+    if (val == null) return '—'
+    if (store.displayMode === 'total') return val.toString()
+    
+    if (store.displayMode === 'perGame') {
+      const apps = player.appearances || 1
+      return (val / apps).toFixed(2)
+    }
+    
+    if (store.displayMode === 'per90') {
+      const mins = player.minutes_played || 90
+      return (val / (mins / 90)).toFixed(2)
+    }
+    
+    return val.toString()
   }
 
   const columns = [
@@ -131,9 +148,20 @@ export default function ExplorerPage() {
             {data.total} players found
           </p>
         </div>
-        <button onClick={() => store.resetFilters()} className="btn-ghost text-xs">
-          Reset Filters
-        </button>
+        <div className="flex gap-4 items-center">
+          <select
+            className="input-dark text-sm"
+            value={store.displayMode}
+            onChange={(e) => store.setFilter('displayMode', e.target.value)}
+          >
+            <option value="total">Total Stats</option>
+            <option value="perGame">Per Game</option>
+            <option value="per90">Per 90</option>
+          </select>
+          <button onClick={() => store.resetFilters()} className="btn-ghost text-xs">
+            Reset Filters
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -297,8 +325,8 @@ export default function ExplorerPage() {
                   <td>{p.team ?? '—'}</td>
                   <td>{p.tournament_name ?? '—'}</td>
                   <td>{p.season_name ?? '—'}</td>
-                  <td style={{ color: 'var(--color-accent-green)' }}>{p.goals ?? '—'}</td>
-                  <td style={{ color: 'var(--color-accent-amber)' }}>{p.assists ?? '—'}</td>
+                  <td style={{ color: 'var(--color-accent-green)' }}>{formatStat(p.goals, p)}</td>
+                  <td style={{ color: 'var(--color-accent-amber)' }}>{formatStat(p.assists, p)}</td>
                   <td>{p.rating ? Number(p.rating).toFixed(2) : '—'}</td>
                   <td className="text-xs">{p.role ?? '—'}</td>
                   <td>{p.role_score ? Number(p.role_score).toFixed(2) : '—'}</td>

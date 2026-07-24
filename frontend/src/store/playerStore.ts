@@ -16,7 +16,7 @@ interface PlayerFiltersState {
   minutesMax: number | undefined
   sortBy: string
   sortDir: string
-
+  displayMode: 'total' | 'perGame' | 'per90'
   setFilter: (key: string, value: unknown) => void
   resetFilters: () => void
   setPage: (page: number) => void
@@ -38,6 +38,7 @@ const defaults = {
   minutesMax: undefined as number | undefined,
   sortBy: 'name',
   sortDir: 'asc',
+  displayMode: 'total' as const,
 }
 
 export const usePlayerStore = create<PlayerFiltersState>((set) => ({

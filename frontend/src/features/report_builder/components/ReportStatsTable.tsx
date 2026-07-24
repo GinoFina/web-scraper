@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getPlayer } from '../../../services/api'
+import { usePlayerStore } from '../../../store/playerStore'
 
 export default function ReportStatsTable({ playerId }: { playerId: number }) {
   const [data, setData] = useState<any>(null)
@@ -10,9 +11,25 @@ export default function ReportStatsTable({ playerId }: { playerId: number }) {
     }
   }, [playerId])
 
+  const displayMode = usePlayerStore(state => state.displayMode)
+
   if (!data) return <div className="p-4 text-center text-[var(--color-text-muted)] print:text-gray-500">Loading stats...</div>
 
   const s = data.stats
+
+  const formatStat = (val: number | undefined) => {
+    if (val == null) return '—'
+    if (displayMode === 'total') return val.toString()
+    if (displayMode === 'perGame') {
+      const apps = s.appearances || 1
+      return (val / apps).toFixed(2)
+    }
+    if (displayMode === 'per90') {
+      const mins = s.minutes_played || 90
+      return (val / (mins / 90)).toFixed(2)
+    }
+    return val.toString()
+  }
 
   return (
     <div className="bg-[var(--color-surface-800)] rounded-lg p-4 border border-[var(--color-border)] print:bg-white print:border-gray-300 print:text-black">
@@ -28,25 +45,25 @@ export default function ReportStatsTable({ playerId }: { playerId: number }) {
 
         {/* Attacking */}
         <div className="flex flex-col gap-1">
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Goals:</span> <span className="font-semibold">{s.goals || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Assists:</span> <span className="font-semibold">{s.assists || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">xG:</span> <span className="font-semibold">{s.expected_goals?.toFixed(2) || '—'}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">xA:</span> <span className="font-semibold">{s.expected_assists?.toFixed(2) || '—'}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Goals:</span> <span className="font-semibold">{formatStat(s.goals)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Assists:</span> <span className="font-semibold">{formatStat(s.assists)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">xG:</span> <span className="font-semibold">{formatStat(s.expected_goals)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">xA:</span> <span className="font-semibold">{formatStat(s.expected_assists)}</span></div>
         </div>
 
         {/* Passing & Creation */}
         <div className="flex flex-col gap-1">
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Key Passes:</span> <span className="font-semibold">{s.key_passes || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Big Chances:</span> <span className="font-semibold">{s.big_chances_created || 0}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Key Passes:</span> <span className="font-semibold">{formatStat(s.key_passes)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Big Chances:</span> <span className="font-semibold">{formatStat(s.big_chances_created)}</span></div>
           <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Pass Acc:</span> <span className="font-semibold">{s.accurate_passes_pct ? `${s.accurate_passes_pct}%` : '—'}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Succ Dribbles:</span> <span className="font-semibold">{s.dribbles_won || 0}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Succ Dribbles:</span> <span className="font-semibold">{formatStat(s.dribbles_won)}</span></div>
         </div>
 
         {/* Defending */}
         <div className="flex flex-col gap-1">
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Tackles:</span> <span className="font-semibold">{s.tackles || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Interceptions:</span> <span className="font-semibold">{s.interceptions || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Clearances:</span> <span className="font-semibold">{s.clearances || 0}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Tackles:</span> <span className="font-semibold">{formatStat(s.tackles)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Interceptions:</span> <span className="font-semibold">{formatStat(s.interceptions)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Clearances:</span> <span className="font-semibold">{formatStat(s.clearances)}</span></div>
           <div className="flex justify-between"><span className="text-[var(--color-text-secondary)] print:text-gray-600">Duels Won:</span> <span className="font-semibold">{s.duels_won_pct ? `${s.duels_won_pct}%` : '—'}</span></div>
         </div>
       </div>

@@ -54,7 +54,7 @@ class SofascoreClient:
             season = data.get("season", {})
             return {
                 "tournament_name": std_name or raw_name,
-                "season_name": std_name or season.get("name", f"ID:{season_id}"),
+                "season_name": season.get("year", f"ID:{season_id}"),
                 "season_year": season.get("year", ""),
             }
         except Exception:
@@ -67,13 +67,13 @@ class SofascoreClient:
             )
             return {
                 "tournament_name": std_name or raw_name,
-                "season_name": std_name or (season.get("name", f"ID:{season_id}") if season else f"ID:{season_id}"),
+                "season_name": season.get("year", f"ID:{season_id}") if season else f"ID:{season_id}",
                 "season_year": season.get("year", "") if season else "",
             }
         except Exception:
             return {
                 "tournament_name": std_name or f"ID:{tournament_id}",
-                "season_name": std_name or f"ID:{season_id}",
+                "season_name": f"ID:{season_id}",
                 "season_year": "",
             }
 

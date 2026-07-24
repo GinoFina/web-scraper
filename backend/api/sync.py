@@ -21,7 +21,7 @@ _ws_clients: set[WebSocket] = set()
 
 async def _broadcast(level: str, message: str) -> None:
     """Send a log message to all connected WebSocket clients."""
-    print(f"[WS BROADCAST] {level.upper()}: {message} to {len(_ws_clients)} clients", flush=True)
+    global _ws_clients
     payload = {"level": level, "message": message}
     dead = set()
     for ws in _ws_clients:
@@ -36,7 +36,10 @@ async def _broadcast(level: str, message: str) -> None:
 def _make_log_callback(loop: asyncio.AbstractEventLoop):
     """Create a sync log callback that pushes to WebSocket via the event loop."""
     def log(level: str, message: str) -> None:
-        asyncio.run_coroutine_threadsafe(_broadcast(level, message), loop)
+        try:
+            asyncio.run_coroutine_threadsafe(_broadcast(level, message), loop)
+        except Exception as e:
+            print(f"[WS] Error scheduling log: {e}", flush=True)
     return log
 
 
@@ -44,7 +47,6 @@ def _make_log_callback(loop: asyncio.AbstractEventLoop):
 
 class AddLeagueRequest(BaseModel):
     url: str
-    accumulation: str = "total"
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -59,13 +61,17 @@ def get_leagues():
 @router.post("/league")
 async def add_league(req: AddLeagueRequest):
     """Add and scrape a new league URL. Runs league → enrich → recalculate pipeline."""
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+    print(f"[DEBUG] add_league called. _ws_clients len: {len(_ws_clients)}", flush=True)
     log = _make_log_callback(loop)
 
     result = await asyncio.to_thread(
         run_league_pipeline,
         url=req.url,
-        accumulation=req.accumulation,
+        accumulation="total",
         delay=0.5,
         log=log,
     )
@@ -75,7 +81,10 @@ async def add_league(req: AddLeagueRequest):
 @router.post("/update-all")
 async def update_all():
     """Update all tracked leagues, enrich, and recalculate."""
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
     log = _make_log_callback(loop)
 
     result = await asyncio.to_thread(
