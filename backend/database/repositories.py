@@ -30,11 +30,18 @@ def upsert_player(conn: sqlite3.Connection, player_id: int, info: dict) -> None:
     if isinstance(pos_detailed, list) and pos_detailed:
         sp = "/".join(str(p).upper() for p in pos_detailed if p)
 
+    # Check if we got attributes passed down (could be injected in info)
+    attributes = info.get("attributes")
+    attributes_json = json.dumps(attributes) if attributes else None
+
+    height = info.get("height")
+    foot = info.get("preferredFoot")
+
     conn.execute(
         """
         INSERT INTO players (player_id, name, team, team_id, nationality, country_alpha2,
-                             position, specific_position, age, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                             position, specific_position, age, height, foot, attributes, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(player_id) DO UPDATE SET
             name              = excluded.name,
             team              = COALESCE(NULLIF(excluded.team,''), team),
@@ -44,9 +51,12 @@ def upsert_player(conn: sqlite3.Connection, player_id: int, info: dict) -> None:
             position          = COALESCE(NULLIF(excluded.position,''), position),
             specific_position = COALESCE(NULLIF(excluded.specific_position,''), specific_position),
             age               = COALESCE(excluded.age, age),
+            height            = COALESCE(excluded.height, height),
+            foot              = COALESCE(excluded.foot, foot),
+            attributes        = COALESCE(excluded.attributes, attributes),
             updated_at        = excluded.updated_at
         """,
-        (player_id, info.get("name", ""), team, team_id, country, alpha2, pos, sp, age),
+        (player_id, info.get("name", ""), team, team_id, country, alpha2, pos, sp, age, height, foot, attributes_json),
     )
 
 
@@ -191,9 +201,43 @@ def get_player_detail(conn: sqlite3.Connection, player_id: int) -> dict | None:
         (player_id,),
     ).fetchall()
 
+    p_dict = dict(player)
+    if p_dict.get("attributes"):
+        try:
+            p_dict["attributes"] = json.loads(p_dict["attributes"])
+        except Exception:
+            pass
+
+    s_list = []
+    for s in stats:
+        s_dict = dict(s)
+        if s_dict.get("heatmap"):
+            try:
+                s_dict["heatmap"] = json.loads(s_dict["heatmap"])
+            except Exception:
+                pass
+        if s_dict.get("raw_json"):
+            try:
+                s_dict["raw_json"] = json.loads(s_dict["raw_json"])
+            except Exception:
+                pass
+        s_list.append(s_dict)
+
+    # Find the first raw_json to extract height and foot
+    raw_player = {}
+    for s in s_list:
+        if s.get("raw_json"):
+            raw_player = s["raw_json"].get("player", {})
+            break
+
+    if "height" not in p_dict or p_dict["height"] is None:
+        p_dict["height"] = raw_player.get("height")
+    if "foot" not in p_dict or p_dict["foot"] is None:
+        p_dict["foot"] = raw_player.get("preferredFoot")
+
     return {
-        "player": dict(player),
-        "stats": [dict(s) for s in stats],
+        "player": p_dict,
+        "stats": s_list,
     }
 
 
@@ -208,6 +252,7 @@ def upsert_stats(
     source: str = "league",
     accumulation: str = "total",
     raw_json: str | None = None,
+    heatmap: str | None = None,
 ) -> None:
     """Insert or update season stats from mapped stat dict."""
     m = mapped
@@ -216,7 +261,7 @@ def upsert_stats(
         INSERT INTO season_stats (
             player_id, tournament_id, tournament_name, season_id, season_name, season_year,
             team_id, team_name, accumulation,
-            appearances, minutes_played, goals, assists, rating, penalty_goals,
+            appearances, minutes_played, goals, assists, expected_goals, expected_assists, rating, penalty_goals,
             accurate_passes, total_passes, accurate_passes_pct,
             key_passes, big_chances_created,
             accurate_long_balls, total_long_balls, accurate_long_balls_pct,
@@ -230,10 +275,10 @@ def upsert_stats(
             saves, clean_sheets, saves_inside_box, saves_outside_box,
             goals_conceded, goals_conceded_inside_box, goals_conceded_outside_box,
             penalties_saved, punches, high_claims, runs_out, successful_runs_out,
-            source, raw_json
+            source, raw_json, heatmap
         ) VALUES (
             ?,?,?,?,?,?,?,?,?,
-            ?,?,?,?,?,?,
+            ?,?,?,?,?,?,?,?,
             ?,?,?,?,?,
             ?,?,?,?,?,?,
             ?,?,?,?,?,
@@ -242,7 +287,7 @@ def upsert_stats(
             ?,?,?,?,?,
             ?,?,?,?,
             ?,?,?,?,?,?,?,?,?,?,?,?,
-            ?,?
+            ?,?,?
         )
         ON CONFLICT(player_id, tournament_id, season_id, accumulation) DO UPDATE SET
             tournament_name             = COALESCE(NULLIF(excluded.tournament_name,''), tournament_name),
@@ -254,6 +299,8 @@ def upsert_stats(
             minutes_played              = COALESCE(excluded.minutes_played, minutes_played),
             goals                       = COALESCE(excluded.goals, goals),
             assists                     = COALESCE(excluded.assists, assists),
+            expected_goals              = COALESCE(excluded.expected_goals, expected_goals),
+            expected_assists            = COALESCE(excluded.expected_assists, expected_assists),
             rating                      = COALESCE(excluded.rating, rating),
             penalty_goals               = COALESCE(excluded.penalty_goals, penalty_goals),
             accurate_passes             = COALESCE(excluded.accurate_passes, accurate_passes),
@@ -304,6 +351,7 @@ def upsert_stats(
             successful_runs_out         = COALESCE(excluded.successful_runs_out, successful_runs_out),
             source                      = excluded.source,
             raw_json                    = excluded.raw_json,
+            heatmap                     = excluded.heatmap,
             fetched_at                  = datetime('now')
         """,
         (
@@ -312,6 +360,7 @@ def upsert_stats(
             meta.get("team_id"), meta.get("team_name", ""),
             accumulation,
             m.get("appearances"), m.get("minutes_played"), m.get("goals"), m.get("assists"),
+            m.get("expected_goals"), m.get("expected_assists"),
             m.get("rating"), m.get("penalty_goals"),
             m.get("accurate_passes"), m.get("total_passes"), m.get("accurate_passes_pct"),
             m.get("key_passes"), m.get("big_chances_created"),
@@ -330,7 +379,7 @@ def upsert_stats(
             m.get("goals_conceded"), m.get("goals_conceded_inside_box"), m.get("goals_conceded_outside_box"),
             m.get("penalties_saved"), m.get("punches"), m.get("high_claims"),
             m.get("runs_out"), m.get("successful_runs_out"),
-            source, raw_json,
+            source, raw_json, heatmap,
         ),
     )
 
@@ -344,7 +393,7 @@ def generate_total_stats(conn: sqlite3.Connection):
     INSERT INTO season_stats (
         player_id, tournament_id, tournament_name, season_id, season_name, season_year,
         team_id, team_name, accumulation,
-        appearances, minutes_played, goals, assists, rating, penalty_goals,
+        appearances, minutes_played, goals, assists, expected_goals, expected_assists, rating, penalty_goals,
         accurate_passes, total_passes, accurate_passes_pct, key_passes, big_chances_created,
         accurate_long_balls, total_long_balls, accurate_long_balls_pct,
         accurate_crosses, total_crosses, accurate_crosses_pct,
@@ -370,6 +419,7 @@ def generate_total_stats(conn: sqlite3.Connection):
         p.team as team_name,
         'total' as accumulation,
         SUM(appearances), SUM(minutes_played), SUM(goals), SUM(assists),
+        SUM(expected_goals), SUM(expected_assists),
         SUM(rating * minutes_played) / NULLIF(SUM(minutes_played), 0), SUM(penalty_goals),
         SUM(accurate_passes), SUM(total_passes), 
         CAST(SUM(accurate_passes) AS FLOAT) / NULLIF(SUM(total_passes), 0) * 100,
@@ -406,6 +456,8 @@ def generate_total_stats(conn: sqlite3.Connection):
         minutes_played = excluded.minutes_played,
         goals = excluded.goals,
         assists = excluded.assists,
+        expected_goals = excluded.expected_goals,
+        expected_assists = excluded.expected_assists,
         rating = excluded.rating,
         penalty_goals = excluded.penalty_goals,
         accurate_passes = excluded.accurate_passes,
@@ -489,12 +541,13 @@ def upsert_tracked_league(
 ) -> None:
     conn.execute(
         """
-        INSERT INTO tracked_leagues (url, tournament_id, tournament_name, season_id, season_name, accumulation)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO tracked_leagues (url, tournament_id, tournament_name, season_id, season_name, accumulation, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, 1)
         ON CONFLICT(url) DO UPDATE SET
             tournament_name = excluded.tournament_name,
             season_name     = excluded.season_name,
-            last_updated    = datetime('now')
+            last_updated    = datetime('now'),
+            is_active       = 1
         """,
         (url, tournament_id, tournament_name, season_id, season_name, accumulation),
     )
@@ -502,9 +555,19 @@ def upsert_tracked_league(
 
 def get_tracked_leagues(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
-        "SELECT * FROM tracked_leagues ORDER BY tournament_name"
+        "SELECT * FROM tracked_leagues ORDER BY tournament_name, season_name DESC"
     ).fetchall()
     return [dict(r) for r in rows]
+
+
+def toggle_tracked_league(conn: sqlite3.Connection, league_id: int) -> dict:
+    row = conn.execute("SELECT is_active FROM tracked_leagues WHERE id = ?", (league_id,)).fetchone()
+    if not row:
+        return {"success": False, "error": "Not found"}
+    new_state = 0 if row[0] != 0 else 1
+    conn.execute("UPDATE tracked_leagues SET is_active = ? WHERE id = ?", (new_state, league_id))
+    conn.commit()
+    return {"success": True, "is_active": new_state}
 
 
 def delete_tracked_league(conn: sqlite3.Connection, league_id: int) -> bool:

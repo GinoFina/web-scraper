@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { addLeague, updateAll, getTrackedLeagues, deleteLeague, createSyncWs, API_BASE } from '../../services/api'
+import { addLeague, updateAll, getTrackedLeagues, deleteLeague, toggleLeague, createSyncWs, API_BASE } from '../../services/api'
 
 interface LogEntry {
   level: string
@@ -9,6 +9,7 @@ interface LogEntry {
 
 export default function SyncPage() {
   const [leagues, setLeagues] = useState<any[]>([])
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [url, setUrl] = useState('')
   const [syncing, setSyncing] = useState(false)
@@ -86,10 +87,32 @@ export default function SyncPage() {
     setSyncing(false)
   }
 
-  const handleDelete = async (id: number) => {
-    await deleteLeague(id)
+  const handleToggleTracking = async (id: number) => {
+    await toggleLeague(id)
     await fetchLeagues()
   }
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr || dateStr === 'Never') return 'Never'
+    const clean = dateStr.slice(0, 10)
+    const parts = clean.split('-')
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`
+    }
+    return clean
+  }
+
+  // Group leagues by tournament_name
+  const groupedLeagues = Object.values(
+    leagues.reduce((acc: Record<string, any[]>, item: any) => {
+      const name = item.tournament_name || 'Unknown League'
+      if (!acc[name]) acc[name] = []
+      acc[name].push(item)
+      return acc
+    }, {})
+  ).map((group: any[]) => {
+    return group.sort((a, b) => (b.season_name || '').localeCompare(a.season_name || ''))
+  })
 
   return (
     <div className="min-h-full flex flex-col gap-5 animate-fade-in">
@@ -154,26 +177,103 @@ export default function SyncPage() {
                 No leagues tracked yet. Add one above.
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
-                {leagues.map((league: any) => (
-                  <div
-                    key={league.id}
-                    className="flex items-center justify-between p-3 rounded-lg"
-                    style={{ background: 'var(--color-surface-700)', border: '1px solid var(--color-border)' }}
-                  >
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                        {league.tournament_name || 'Unknown'}
-                      </p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                        {league.season_name} · {league.accumulation} · Last: {league.last_updated?.slice(0, 10) || 'Never'}
-                      </p>
+              <div className="flex flex-col gap-3">
+                {groupedLeagues.map((group) => {
+                  const main = group[0]
+                  const older = group.slice(1)
+                  const name = main.tournament_name || 'Unknown'
+                  const isExpanded = !!expandedGroups[name]
+                  const isActive = main.is_active !== 0
+
+                  return (
+                    <div key={name} className="relative flex flex-col">
+                      {/* Main League Row */}
+                      <div
+                        className="flex items-center justify-between p-3 rounded-lg transition-all duration-200"
+                        style={{
+                          background: isActive ? 'var(--color-surface-700)' : 'var(--color-surface-800)',
+                          border: `1px solid ${isActive ? 'var(--color-border)' : 'var(--color-surface-600)'}`,
+                          opacity: isActive ? 1 : 0.65,
+                        }}
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                              {name}
+                            </p>
+                            {!isActive && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded uppercase font-bold" style={{ background: '#3f3f46', color: '#d4d4d8' }}>
+                                Pausado
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                            Temporada {main.season_name} · Last: {formatDate(main.last_updated)}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {older.length > 0 && (
+                            <button
+                              onClick={() => setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }))}
+                              className="btn-ghost px-2 flex items-center justify-center transition-colors duration-200"
+                              style={{ border: 'none', background: isExpanded ? 'var(--color-surface-600)' : 'transparent', color: isExpanded ? 'var(--color-accent-primary)' : 'var(--color-text-muted)' }}
+                              title="Historial de Temporadas"
+                            >
+                              <svg className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          )}
+                          <button
+                            className={`text-xs px-3 py-1.5 w-[115px] whitespace-nowrap flex items-center justify-center ${isActive ? 'btn-danger' : 'btn-ghost font-medium'}`}
+                            style={
+                              !isActive
+                                ? { background: 'var(--color-surface-600)', color: 'var(--color-text-primary)', border: '1px solid var(--color-surface-400)' }
+                                : undefined
+                            }
+                            onClick={() => handleToggleTracking(main.id)}
+                          >
+                            {isActive ? 'Stop Tracking' : 'Start Tracking'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Dropdown for Older Seasons (pushes content down) */}
+                      <div 
+                        className="relative overflow-hidden transition-all duration-300 ease-in-out"
+                        style={{
+                          maxHeight: isExpanded ? '500px' : '0px',
+                          opacity: isExpanded ? 1 : 0,
+                          marginTop: isExpanded ? '0.25rem' : '0px'
+                        }}
+                      >
+                        <div className="rounded-lg border border-[var(--color-surface-500)] bg-[var(--color-surface-800)]">
+                          <div className="p-1.5 flex flex-col max-h-[250px] overflow-y-auto">
+                            {older.map((old) => (
+                              <div key={old.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5 transition-colors">
+                                <div>
+                                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Temporada {old.season_name} · Last: {formatDate(old.last_updated)}</p>
+                                </div>
+                                <button
+                                  className={`text-xs px-3 py-1.5 w-[115px] whitespace-nowrap flex items-center justify-center ${old.is_active !== 0 ? 'btn-danger' : 'btn-ghost font-medium'}`}
+                                  style={
+                                    old.is_active === 0
+                                      ? { background: 'var(--color-surface-600)', color: 'var(--color-text-primary)', border: '1px solid var(--color-surface-400)' }
+                                      : undefined
+                                  }
+                                  onClick={() => handleToggleTracking(old.id)}
+                                >
+                                  {old.is_active !== 0 ? 'Stop Tracking' : 'Start Tracking'}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <button className="btn-danger" onClick={() => handleDelete(league.id)}>
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>

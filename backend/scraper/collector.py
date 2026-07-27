@@ -106,6 +106,8 @@ def map_stats(raw: dict) -> dict:
         "minutes_played": _g(s, "minutesPlayed"),
         "goals": _g(s, "goals"),
         "assists": _g(s, "assists"),
+        "expected_goals": _g(s, "expectedGoals"),
+        "expected_assists": _g(s, "expectedAssists"),
         "rating": _g(s, "rating"),
         "penalty_goals": _g(s, "penaltyGoals"),
         "accurate_passes": acc_p,
@@ -211,32 +213,33 @@ def run_league_pipeline(
         current_page = page.get("page", offset // 100 + 1)
         log("progress", f"Page {current_page}/{total_pages} — {offset + len(results)} players")
 
-        with conn:
-            for entry in results:
-                player_raw = entry.get("player", {})
-                team_raw = entry.get("team", {})
-                if "team" in player_raw:
-                    del player_raw["team"]
+        for entry in results:
+            player_raw = entry.get("player", {})
+            team_raw = entry.get("team", {})
+            if "team" in player_raw:
+                del player_raw["team"]
 
-                player_id = player_raw.get("id")
-                if not player_id:
-                    continue
+            player_id = player_raw.get("id")
+            if not player_id:
+                continue
 
-                stats_raw = {k: v for k, v in entry.items() if k not in ("player", "team")}
-                mapped = map_stats(stats_raw)
+            stats_raw = {k: v for k, v in entry.items() if k not in ("player", "team")}
+            mapped = map_stats(stats_raw)
 
-                player_meta = meta.copy()
-                if team_raw:
-                    player_meta["team_id"] = team_raw.get("id")
-                    player_meta["team_name"] = team_raw.get("name")
+            player_meta = meta.copy()
+            if team_raw:
+                player_meta["team_id"] = team_raw.get("id")
+                player_meta["team_name"] = team_raw.get("name")
 
+            with conn:
                 repo.upsert_player(conn, player_id, player_raw)
                 repo.upsert_stats(
                     conn, player_id, tournament_id, player_meta, mapped,
                     source="league", accumulation=accumulation,
                     raw_json=json.dumps(stats_raw, ensure_ascii=False),
+                    heatmap=None,
                 )
-                total_saved += 1
+            total_saved += 1
 
         if current_page >= total_pages:
             break
@@ -361,15 +364,16 @@ def run_update_all(
     """Update all tracked leagues, then enrich and recalculate."""
     conn = get_connection()
     leagues = repo.get_tracked_leagues(conn)
+    active_leagues = [l for l in leagues if l.get("is_active", 1) != 0]
 
-    if not leagues:
-        log("warning", "No tracked leagues found. Use 'Add League' first.")
-        return {"error": "No tracked leagues"}
+    if not active_leagues:
+        log("warning", "No active tracked leagues found. Enable tracking or use 'Add League' first.")
+        return {"error": "No active tracked leagues"}
 
-    log("info", f"Updating {len(leagues)} league(s)...")
+    log("info", f"Updating {len(active_leagues)} active league(s)... (Skipped {len(leagues) - len(active_leagues)} inactive)")
     results = []
 
-    for league in leagues:
+    for league in active_leagues:
         log("info", f"── {league['tournament_name']} ──")
         result = run_league_pipeline(
             url=league["url"],

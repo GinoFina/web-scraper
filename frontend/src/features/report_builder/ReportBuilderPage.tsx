@@ -12,6 +12,7 @@ const PALETTE_ITEMS: { type: ComponentType, icon: string, label: string, desc: s
   { type: 'RadarChart', icon: '📊', label: 'Radar Chart', desc: 'Percentile radar comparison' },
   { type: 'ScatterPlot', icon: '📈', label: 'Scatter Plot', desc: 'Goals vs xG league comparison' },
   { type: 'StatsTable', icon: '📋', label: 'Stats Table', desc: 'Key season statistics grid' },
+  { type: 'PitchMap', icon: '🔥', label: 'Heatmap', desc: 'Player positional heatmap' },
   { type: 'TextBlock', icon: '📝', label: 'Text Block', desc: 'Custom text or notes' },
 ]
 

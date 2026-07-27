@@ -9,24 +9,25 @@ const positions = [
   { id: 'F', label: 'RW', x: 30, y: 82 },
   { id: 'M', label: 'AMF', x: 40, y: 50 },
   { id: 'M', label: 'CMF', x: 60, y: 50 },
-  { id: 'M', label: 'DMF', x: 75, y: 50 },
+  { id: 'M', label: 'DMF', x: 80, y: 50 },
   { id: 'M', label: 'LM', x: 60, y: 15 },
   { id: 'M', label: 'RM', x: 60, y: 85 },
   { id: 'D', label: 'LB', x: 95, y: 15 },
-  { id: 'D', label: 'CB', x: 95, y: 38 },
-  { id: 'D', label: 'CB', x: 95, y: 62 },
+  { id: 'D', label: 'CB', x: 102, y: 38 },
+  { id: 'D', label: 'CB', x: 102, y: 62 },
   { id: 'D', label: 'RB', x: 95, y: 85 },
   { id: 'G', label: 'GK', x: 123, y: 50 },
 ]
 
 export default function PitchSelector({ selected, onSelect }: Props) {
   return (
-    <div className="relative w-full max-w-[350px] mx-auto" style={{ aspectRatio: '130 / 100' }}>
-      <svg
-        viewBox="0 0 130 100"
-        className="absolute inset-0 w-full h-full"
-        style={{ fill: 'none', stroke: 'var(--color-surface-500)', strokeWidth: 0.5 }}
-      >
+    <div className="w-full flex items-center justify-center my-1">
+      <div className="relative w-full max-w-[320px] mx-auto" style={{ aspectRatio: '130 / 100' }}>
+        <svg
+          viewBox="0 0 130 100"
+          className="absolute inset-0 w-full h-full"
+          style={{ fill: 'none', stroke: 'var(--color-surface-500)', strokeWidth: 0.5 }}
+        >
         {/* Pitch outline */}
         <rect x="2" y="2" width="126" height="96" rx="2" />
         {/* Center line */}
@@ -82,6 +83,7 @@ export default function PitchSelector({ selected, onSelect }: Props) {
           </button>
         )
       })}
+    </div>
     </div>
   )
 }

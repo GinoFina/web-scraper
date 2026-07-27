@@ -61,7 +61,7 @@ LEAGUE_MULTIPLIERS: dict[int, float] = {
 # Fields requested from the league statistics endpoint
 LEAGUE_STAT_FIELDS = ",".join([
     "appearances", "minutesPlayed", "goals", "assists", "rating",
-    "penaltyGoals",
+    "penaltyGoals", "expectedGoals", "expectedAssists",
     "accuratePasses", "inaccuratePasses", "keyPasses",
     "accurateLongBalls", "totalLongBalls",
     "accurateCrosses", "accurateCrossesPercentage",

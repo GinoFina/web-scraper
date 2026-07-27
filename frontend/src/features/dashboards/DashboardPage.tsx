@@ -16,7 +16,7 @@ export default function DashboardPage() {
   useEffect(() => {
     Promise.all([getMetrics(), getPositions(), getLeagues()])
       .then(([m, p, l]) => { setMetrics(m); setPositions(p); setLeagues(l) })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const fetchScatter = useCallback(async () => {
@@ -144,18 +144,30 @@ export default function DashboardPage() {
     }],
   } : null
 
+  const onEvents = {
+    click: (params: any) => {
+      if (params.componentType === 'series' && params.seriesType === 'scatter') {
+        const playerId = params.data[2]
+        if (playerId) {
+          store.clearPlayers()
+          store.togglePlayer(playerId)
+        }
+      }
+    }
+  }
+
   return (
     <div className="min-h-full flex flex-col gap-5 animate-fade-in overflow-hidden">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Scouting Dashboards</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Analytics Dashboard</h1>
         <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-          Scatter plots, radar comparisons & positional analysis
+          Interactive scatter plots & player evaluation radars
         </p>
       </div>
 
       {/* Controls */}
-      <div className="glass-card p-4 shrink-0">
+      <div className="glass-card p-4 shrink-0 flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <select className="input-dark w-full sm:w-auto flex-1 min-w-[140px] max-w-[200px]" value={store.metricX} onChange={(e) => store.setMetricX(e.target.value)}>
             {metrics.map((m) => <option key={m.key} value={m.key}>{m.label} (X)</option>)}
@@ -171,22 +183,31 @@ export default function DashboardPage() {
             <option value="">All Leagues</option>
             {leagues.map((l) => <option key={l} value={l}>{l}</option>)}
           </select>
-          <div className="flex items-center gap-2 flex-1 min-w-[160px] max-w-[200px]">
-            <label className="text-xs whitespace-nowrap" style={{ color: 'var(--color-text-muted)' }}>Top N</label>
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-[260px]">
+            <label className="text-xs whitespace-nowrap font-medium" style={{ color: 'var(--color-text-muted)' }}>Top N</label>
             <input
               type="range"
               min={10}
               max={200}
               value={store.topN}
               onChange={(e) => store.setTopN(+e.target.value)}
-              className="flex-1 min-w-0"
+              className="flex-1 min-w-0 cursor-pointer"
             />
-            <span className="text-xs w-8 text-right shrink-0" style={{ color: 'var(--color-text-secondary)' }}>{store.topN}</span>
+            <input
+              type="number"
+              min={1}
+              max={2000}
+              value={store.topN}
+              onChange={(e) => store.setTopN(Math.max(1, parseInt(e.target.value) || 1))}
+              className="input-dark text-xs text-center py-1 px-1.5 w-14 shrink-0"
+              style={{ border: '1px solid var(--color-border)' }}
+            />
           </div>
 
-          <div className="flex items-center gap-2 flex-1 min-w-[160px] max-w-[200px]">
-            <input type="number" placeholder="Min '" className="input-dark w-full min-w-0" value={store.minutesMin ?? ''} onChange={(e) => store.setFilter('minutesMin', e.target.value ? +e.target.value : undefined)} />
-            <input type="number" placeholder="max" className="input-dark w-full min-w-0" value={store.minutesMax ?? ''} onChange={(e) => store.setFilter('minutesMax', e.target.value ? +e.target.value : undefined)} />
+          <div className="flex items-center gap-2 flex-1 min-w-[170px] max-w-[220px]">
+            <input type="number" placeholder="Min Played" title="Mínimo de minutos jugados" className="input-dark text-xs px-2 w-full min-w-0 text-center" value={store.minutesMin ?? ''} onChange={(e) => store.setFilter('minutesMin', e.target.value ? +e.target.value : undefined)} />
+            <span style={{ color: 'var(--color-text-muted)' }}>–</span>
+            <input type="number" placeholder="Max Played" title="Máximo de minutos jugados" className="input-dark text-xs px-2 w-full min-w-0 text-center" value={store.minutesMax ?? ''} onChange={(e) => store.setFilter('minutesMax', e.target.value ? +e.target.value : undefined)} />
           </div>
         </div>
       </div>
@@ -201,7 +222,7 @@ export default function DashboardPage() {
           </h3>
           <div className="flex-1 min-h-0">
             {scatterOption ? (
-              <ReactECharts option={scatterOption} style={{ height: '100%', width: '100%' }} />
+              <ReactECharts option={scatterOption} onEvents={onEvents} style={{ height: '100%', width: '100%' }} />
             ) : (
               <div className="h-full flex items-center justify-center" style={{ color: 'var(--color-text-muted)' }}>
                 No data. Sync leagues first.

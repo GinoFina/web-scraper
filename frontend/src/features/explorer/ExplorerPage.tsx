@@ -33,7 +33,7 @@ export default function ExplorerPage() {
       .then(([pos, leagues, nats, teams, seasons]) => {
         setFilterOpts({ positions: pos, leagues, nationalities: nats, teams, seasons })
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   // Fetch players when filters change
@@ -104,17 +104,17 @@ export default function ExplorerPage() {
   const formatStat = (val: number | undefined, player: any) => {
     if (val == null) return '—'
     if (store.displayMode === 'total') return val.toString()
-    
+
     if (store.displayMode === 'perGame') {
       const apps = player.appearances || 1
       return (val / apps).toFixed(2)
     }
-    
+
     if (store.displayMode === 'per90') {
       const mins = player.minutes_played || 90
       return (val / (mins / 90)).toFixed(2)
     }
-    
+
     return val.toString()
   }
 
@@ -240,16 +240,16 @@ export default function ExplorerPage() {
           <div className="flex gap-2 items-center">
             <input
               type="number"
-              placeholder="Age min"
-              className="input-dark w-full"
+              placeholder="Min Age"
+              className="input-dark w-full min-w-0 !px-1 text-xs text-center"
               value={store.ageMin ?? ''}
               onChange={(e) => store.setFilter('ageMin', e.target.value ? +e.target.value : undefined)}
             />
             <span style={{ color: 'var(--color-text-muted)' }}>–</span>
             <input
               type="number"
-              placeholder="max"
-              className="input-dark w-full"
+              placeholder="Max Age"
+              className="input-dark w-full min-w-0 !px-1 text-xs text-center"
               value={store.ageMax ?? ''}
               onChange={(e) => store.setFilter('ageMax', e.target.value ? +e.target.value : undefined)}
             />
@@ -259,16 +259,16 @@ export default function ExplorerPage() {
           <div className="flex gap-2 items-center">
             <input
               type="number"
-              placeholder="Min played"
-              className="input-dark w-full"
+              placeholder="Min Played"
+              className="input-dark w-full min-w-0 !px-1 text-[11px] text-center"
               value={store.minutesMin ?? ''}
               onChange={(e) => store.setFilter('minutesMin', e.target.value ? +e.target.value : undefined)}
             />
             <span style={{ color: 'var(--color-text-muted)' }}>–</span>
             <input
               type="number"
-              placeholder="max"
-              className="input-dark w-full"
+              placeholder="Max Played"
+              className="input-dark w-full min-w-0 !px-1 text-[11px] text-center"
               value={store.minutesMax ?? ''}
               onChange={(e) => store.setFilter('minutesMax', e.target.value ? +e.target.value : undefined)}
             />

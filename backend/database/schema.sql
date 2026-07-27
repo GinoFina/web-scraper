@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS players (
     position          TEXT,
     specific_position TEXT,
     age               INTEGER,
+    height            INTEGER,
+    foot              TEXT,
+    attributes        TEXT,
     updated_at        TEXT DEFAULT (datetime('now'))
 );
 
@@ -34,6 +37,8 @@ CREATE TABLE IF NOT EXISTS season_stats (
     minutes_played              INTEGER,
     goals                       INTEGER,
     assists                     INTEGER,
+    expected_goals              REAL,
+    expected_assists            REAL,
     rating                      REAL,
     penalty_goals               INTEGER,
 
@@ -100,6 +105,7 @@ CREATE TABLE IF NOT EXISTS season_stats (
     -- Metadata
     source      TEXT DEFAULT 'league',
     raw_json    TEXT,
+    heatmap     TEXT,
     fetched_at  TEXT DEFAULT (datetime('now')),
 
     UNIQUE(player_id, tournament_id, season_id, accumulation)
@@ -118,7 +124,8 @@ CREATE TABLE IF NOT EXISTS tracked_leagues (
     season_name     TEXT,
     accumulation    TEXT DEFAULT 'total',
     added_at        TEXT DEFAULT (datetime('now')),
-    last_updated    TEXT
+    last_updated    TEXT,
+    is_active       INTEGER DEFAULT 1
 );
 
 -- Player Evaluations (Role-based scoring)

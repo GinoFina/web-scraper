@@ -11,8 +11,9 @@ export default function ReportScatterPlot({ playerId }: { playerId: number }) {
       getPlayer(playerId).then(res => {
         setPlayerInfo(res)
         // Fetch scatter data for this player's league/season
-        const league = res.stats?.tournament_name
-        const season = res.stats?.season_name
+        const statsObj = res.stats?.[0] || {}
+        const league = statsObj.tournament_name
+        const season = statsObj.season_name
         if (league && season) {
           getScatterData({
             metric_x: 'expected_goals',
@@ -26,7 +27,7 @@ export default function ReportScatterPlot({ playerId }: { playerId: number }) {
 
   if (!data || !playerInfo) return <div className="p-4 text-center text-[var(--color-text-muted)] print:text-gray-500">Loading scatter data...</div>
 
-  const seriesData = data.points.map((p: any) => ({
+  const seriesData = (data.players || []).map((p: any) => ({
     value: [p.x, p.y],
     name: p.name,
     itemStyle: {

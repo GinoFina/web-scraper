@@ -95,6 +95,13 @@ async def update_all():
     return result
 
 
+@router.post("/leagues/{league_id}/toggle")
+def toggle_league(league_id: int):
+    """Toggle tracking state of a league without deleting it."""
+    conn = get_connection()
+    return repo.toggle_tracked_league(conn, league_id)
+
+
 @router.delete("/leagues/{league_id}")
 def delete_league(league_id: int):
     """Remove a tracked league."""

@@ -114,6 +114,11 @@ export async function deleteLeague(leagueId: number) {
   return data
 }
 
+export async function toggleLeague(leagueId: number) {
+  const { data } = await api.post(`/api/sync/leagues/${leagueId}/toggle`)
+  return data
+}
+
 // ── Reports ────────────────────────────────────────────────────────────────
 export async function getPlayerCard(playerId: number) {
   const { data } = await api.get(`/api/reports/player-card/${playerId}`)
@@ -121,6 +126,7 @@ export async function getPlayerCard(playerId: number) {
 }
 
 export function getProxyImageUrl(originalUrl: string): string {
+  if (originalUrl.includes('flagcdn.com')) return originalUrl
   return `${API_BASE}/api/reports/proxy/image?url=${encodeURIComponent(originalUrl)}`
 }
 
