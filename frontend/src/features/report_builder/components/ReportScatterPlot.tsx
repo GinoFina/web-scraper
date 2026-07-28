@@ -25,7 +25,7 @@ export default function ReportScatterPlot({ playerId }: { playerId: number }) {
     }
   }, [playerId])
 
-  if (!data || !playerInfo) return <div className="p-4 text-center text-[var(--color-text-muted)] print:text-gray-500">Loading scatter data...</div>
+  if (!data || !playerInfo) return <div className="p-4 text-center text-[var(--color-text-muted)]">Loading scatter data...</div>
 
   const seriesData = (data.players || []).map((p: any) => ({
     value: [p.x, p.y],
@@ -76,9 +76,9 @@ export default function ReportScatterPlot({ playerId }: { playerId: number }) {
   }
 
   return (
-    <div className="bg-[var(--color-surface-800)] rounded-lg p-4 border border-[var(--color-border)] print:bg-white print:border-gray-300">
-      <h3 className="text-sm font-bold mb-3 text-[var(--color-text-primary)] print:text-black">League Comparison (xG vs Goals)</h3>
-      <div className="w-full h-[300px]">
+    <div className="bg-[var(--color-surface-800)] rounded-lg p-4 border border-[var(--color-border)] flex-1 flex flex-col">
+      <h3 className="text-sm font-bold mb-3 text-[var(--color-text-primary)]">League Comparison (xG vs Goals)</h3>
+      <div className="w-full flex-1 min-h-[250px]">
         <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
       </div>
     </div>

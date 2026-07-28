@@ -6,44 +6,55 @@ export interface DroppedItem {
   id: string
   type: ComponentType
   content?: string // For TextBlock
+  width?: number // In pixels
+  height?: number // In pixels
 }
 
 interface ReportState {
   playerId: number | null
   items: DroppedItem[]
-  
+  orientation: 'Vertical' | 'Horizontal'
+
+  setOrientation: (o: 'Vertical' | 'Horizontal') => void
   setPlayerId: (id: number | null) => void
   addItem: (type: ComponentType) => void
   removeItem: (id: string) => void
   moveItem: (oldIndex: number, newIndex: number) => void
   updateItemContent: (id: string, content: string) => void
+  resizeItem: (id: string, width: number, height: number) => void
   clearReport: () => void
 }
 
 export const useReportStore = create<ReportState>((set) => ({
   playerId: null,
   items: [],
+  orientation: 'Vertical',
 
+  setOrientation: (o) => set({ orientation: o }),
   setPlayerId: (id) => set({ playerId: id }),
-  
+
   addItem: (type) => set((state) => ({
     items: [...state.items, { id: `${type}-${Date.now()}`, type, content: '' }]
   })),
-  
+
   removeItem: (id) => set((state) => ({
     items: state.items.filter(item => item.id !== id)
   })),
-  
+
   moveItem: (oldIndex, newIndex) => set((state) => {
     const newItems = [...state.items]
     const [moved] = newItems.splice(oldIndex, 1)
     newItems.splice(newIndex, 0, moved)
     return { items: newItems }
   }),
-  
+
   updateItemContent: (id, content) => set((state) => ({
     items: state.items.map(item => item.id === id ? { ...item, content } : item)
   })),
-  
+
+  resizeItem: (id, width, height) => set((state) => ({
+    items: state.items.map(item => item.id === id ? { ...item, width, height } : item)
+  })),
+
   clearReport: () => set({ items: [] })
 }))

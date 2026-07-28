@@ -1,5 +1,5 @@
 import { useDraggable } from '@dnd-kit/core'
-import { ComponentType } from '../../store/reportStore'
+import { ComponentType, useReportStore } from '../../store/reportStore'
 
 interface Props {
   type: ComponentType
@@ -14,11 +14,14 @@ export default function DraggablePaletteItem({ type, icon, label, desc }: Props)
     data: { type },
   })
 
+  const addItem = useReportStore(s => s.addItem)
+
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      onClick={() => addItem(type)}
       className={`glass-card-interactive p-3 cursor-grab flex items-start gap-3 print:hidden ${
         isDragging ? 'opacity-50 ring-2 ring-[var(--color-accent-primary)]' : ''
       }`}
