@@ -47,6 +47,11 @@ export async function getLeagues() {
   return data
 }
 
+export async function getSeasons() {
+  const { data } = await api.get('/api/filters/seasons')
+  return data
+}
+
 export async function getNationalities() {
   const { data } = await api.get('/api/filters/nationalities')
   return data
@@ -62,10 +67,6 @@ export async function getMetrics() {
   return data
 }
 
-export async function getSeasons() {
-  const { data } = await api.get('/api/filters/seasons')
-  return data
-}
 
 // ── Analytics ──────────────────────────────────────────────────────────────
 export interface ScatterParams {
@@ -77,8 +78,13 @@ export interface ScatterParams {
   age_max?: number
   minutes_min?: number
   minutes_max?: number
-  league?: string
+  player_id?: number
+  player_league?: string
+  player_season?: string
+  comparison_league?: string
+  comparison_season?: string
   team?: string
+  display_mode?: string
 }
 
 export async function getScatterData(params: ScatterParams) {
@@ -86,10 +92,21 @@ export async function getScatterData(params: ScatterParams) {
   return data
 }
 
-export async function getRadarData(playerId: number, metrics?: string) {
-  const { data } = await api.get(`/api/analytics/radar/${playerId}`, {
-    params: metrics ? { metrics } : {},
-  })
+export async function getRadarData(playerId: number, metrics?: string, playerLeague?: string, playerSeason?: string, displayMode?: string, comparisonPosition?: string, ageMin?: number, ageMax?: number, minutesMin?: number, minutesMax?: number, comparisonLeague?: string, comparisonSeason?: string) {
+  const params: any = {}
+  if (metrics) params.metrics = metrics
+  if (playerLeague && playerLeague !== 'Total') params.player_league = playerLeague
+  if (playerSeason && playerSeason !== 'Total') params.player_season = playerSeason
+  if (displayMode) params.display_mode = displayMode
+  if (comparisonPosition) params.comparison_position = comparisonPosition
+  if (comparisonLeague && comparisonLeague !== 'Total') params.comparison_league = comparisonLeague
+  if (comparisonSeason && comparisonSeason !== 'Total') params.comparison_season = comparisonSeason
+  if (ageMin !== undefined) params.age_min = ageMin
+  if (ageMax !== undefined) params.age_max = ageMax
+  if (minutesMin !== undefined) params.minutes_min = minutesMin
+  if (minutesMax !== undefined) params.minutes_max = minutesMax
+
+  const { data } = await api.get(`/api/analytics/radar/${playerId}`, { params })
   return data
 }
 

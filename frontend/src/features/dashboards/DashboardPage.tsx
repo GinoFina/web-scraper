@@ -12,10 +12,11 @@ export default function DashboardPage() {
   const [scatterData, setScatterData] = useState<any>(null)
   const [radarData, setRadarData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [isLeagueOpen, setIsLeagueOpen] = useState(false)
 
   useEffect(() => {
     Promise.all([getMetrics(), getPositions(), getLeagues()])
-      .then(([m, p, l]) => { setMetrics(m); setPositions(p); setLeagues(l) })
+      .then(([m, p, l]) => { setMetrics(m); setPositions(p); setLeagues(l.filter((league: string) => league !== 'Total')) })
       .catch(() => { })
   }, [])
 
@@ -27,7 +28,7 @@ export default function DashboardPage() {
         metric_y: store.metricY,
         position: store.position || undefined,
         top_n: store.topN,
-        league: store.league || undefined,
+        comparison_league: store.leagues?.length > 0 ? store.leagues.join(',') : undefined,
         team: store.team || undefined,
       }
       if (store.ageMin != null && !isNaN(store.ageMin)) filters.age_min = store.ageMin
@@ -41,7 +42,7 @@ export default function DashboardPage() {
       setScatterData(null)
     }
     setLoading(false)
-  }, [store.metricX, store.metricY, store.position, store.topN, store.ageMin, store.ageMax, store.minutesMin, store.minutesMax, store.league, store.team])
+  }, [store.metricX, store.metricY, store.position, store.topN, store.ageMin, store.ageMax, store.minutesMin, store.minutesMax, store.leagues, store.team])
 
   useEffect(() => { fetchScatter() }, [fetchScatter])
 
@@ -167,7 +168,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Controls */}
-      <div className="glass-card p-4 shrink-0 flex flex-col gap-4">
+      <div className="glass-card p-4 shrink-0 flex flex-col gap-4 relative" style={{ zIndex: 9999 }}>
         <div className="flex flex-wrap items-center gap-3">
           <select className="input-dark w-full sm:w-auto flex-1 min-w-[140px] max-w-[200px]" value={store.metricX} onChange={(e) => store.setMetricX(e.target.value)}>
             {metrics.map((m) => <option key={m.key} value={m.key}>{m.label} (X)</option>)}
@@ -177,12 +178,48 @@ export default function DashboardPage() {
           </select>
           <select className="input-dark w-full sm:w-auto flex-1 min-w-[140px] max-w-[200px]" value={store.position} onChange={(e) => store.setPosition(e.target.value)}>
             <option value="">All Positions</option>
-            {positions.general.map((p) => <option key={p} value={p}>{p}</option>)}
+            {positions.specific.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-          <select className="input-dark w-full sm:w-auto flex-1 min-w-[140px] max-w-[200px]" value={store.league} onChange={(e) => store.setFilter('league', e.target.value)}>
-            <option value="">All Leagues</option>
-            {leagues.map((l) => <option key={l} value={l}>{l}</option>)}
-          </select>
+          <div className="relative w-full sm:w-auto flex-1 min-w-[140px] max-w-[200px]">
+            <button 
+              className="input-dark w-full text-left flex justify-between items-center" 
+              style={{ height: '35px', padding: '8px 12px' }}
+              onClick={() => setIsLeagueOpen(!isLeagueOpen)}
+            >
+              <span className="truncate">
+                {store.leagues?.length > 0 ? `${store.leagues.length} Leagues selected` : 'All Leagues'}
+              </span>
+              <span className="text-[10px] ml-2">▼</span>
+            </button>
+            {isLeagueOpen && (
+              <>
+                <div className="fixed inset-0 z-[60]" onClick={() => setIsLeagueOpen(false)}></div>
+                <div className="absolute top-full left-0 mt-1 w-64 bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-2xl z-[70] py-1 max-h-60 overflow-y-auto">
+                  {leagues.map((l) => {
+                    const isSelected = (store.leagues || []).includes(l)
+                    return (
+                    <label 
+                      key={l} 
+                      className="flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-[#2563eb] hover:text-white transition-none group"
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={isSelected} 
+                        onChange={() => {
+                          const current = store.leagues || []
+                          store.setFilter('leagues', current.includes(l) ? current.filter(x => x !== l) : [...current, l])
+                        }} 
+                        className="rounded border-[var(--color-border)] bg-[var(--color-surface-900)] text-[#2563eb] focus:ring-[#2563eb]" 
+                      />
+                      <span className="text-[13px] truncate text-[var(--color-text-primary)] group-hover:text-white">
+                        {l}
+                      </span>
+                    </label>
+                  )})}
+                </div>
+              </>
+            )}
+          </div>
           <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-[260px]">
             <label className="text-xs whitespace-nowrap font-medium" style={{ color: 'var(--color-text-muted)' }}>Top N</label>
             <input

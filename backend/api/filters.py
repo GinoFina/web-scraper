@@ -14,8 +14,18 @@ router = APIRouter(prefix="/api/filters", tags=["filters"])
 @router.get("/positions")
 def list_positions():
     conn = get_connection()
-    general = repo.get_distinct_values(conn, "players", "position")
-    specific = repo.get_distinct_values(conn, "players", "specific_position")
+    general_raw = repo.get_distinct_values(conn, "players", "position")
+    specific_raw = repo.get_distinct_values(conn, "players", "specific_position")
+    
+    specific_set = set()
+    for pos in specific_raw:
+        for p in pos.split("/"):
+            if p.strip():
+                specific_set.add(p.strip().upper())
+                
+    general = sorted([p.upper() for p in general_raw])
+    specific = sorted(list(specific_set))
+    
     return {"general": general, "specific": specific}
 
 

@@ -15,13 +15,18 @@ export default function DraggablePaletteItem({ type, icon, label, desc }: Props)
   })
 
   const addItem = useReportStore(s => s.addItem)
+  const setConfiguringItem = useReportStore(s => s.setConfiguringItem)
+
+  const handleClick = () => {
+    window.dispatchEvent(new CustomEvent('request-add-item', { detail: type }))
+  }
 
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      onClick={() => addItem(type)}
+      onClick={handleClick}
       className={`glass-card-interactive p-3 cursor-grab flex items-start gap-3 print:hidden ${
         isDragging ? 'opacity-50 ring-2 ring-[var(--color-accent-primary)]' : ''
       }`}

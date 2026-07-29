@@ -20,8 +20,13 @@ def scatter(
     age_max: Optional[int] = None,
     minutes_min: Optional[int] = None,
     minutes_max: Optional[int] = None,
-    league: Optional[str] = None,
+    player_id: Optional[int] = None,
+    player_league: Optional[str] = None,
+    player_season: Optional[str] = None,
+    comparison_league: Optional[str] = None,
+    comparison_season: Optional[str] = None,
     team: Optional[str] = None,
+    display_mode: Optional[str] = None,
 ):
     """Scatter plot data: X vs Y metric with positional average baseline."""
     filters = {}
@@ -33,10 +38,20 @@ def scatter(
         filters["minutes_min"] = minutes_min
     if minutes_max:
         filters["minutes_max"] = minutes_max
-    if league:
-        filters["league"] = league
+    if player_id:
+        filters["player_id"] = player_id
+    if player_league:
+        filters["player_league"] = player_league
+    if player_season:
+        filters["player_season"] = player_season
+    if comparison_league:
+        filters["comparison_league"] = comparison_league
+    if comparison_season:
+        filters["comparison_season"] = comparison_season
     if team:
         filters["team"] = team
+    if display_mode:
+        filters["display_mode"] = display_mode
 
     return get_scatter_data(
         metric_x=metric_x,
@@ -51,10 +66,28 @@ def scatter(
 def radar(
     player_id: int,
     metrics: Optional[str] = Query(None, description="Comma-separated metric keys"),
+    player_league: Optional[str] = None,
+    player_season: Optional[str] = None,
+    display_mode: Optional[str] = None,
+    comparison_position: Optional[str] = None,
+    age_min: Optional[int] = None,
+    age_max: Optional[int] = None,
+    minutes_min: Optional[int] = None,
+    minutes_max: Optional[int] = None,
+    comparison_league: Optional[str] = None,
+    comparison_season: Optional[str] = None,
 ):
     """Radar chart data for a player showing values + percentiles vs position average."""
     metric_list = metrics.split(",") if metrics else None
-    return get_radar_data(player_id, metric_list)
+    filters = {
+        "age_min": age_min,
+        "age_max": age_max,
+        "minutes_min": minutes_min,
+        "minutes_max": minutes_max,
+        "comparison_league": comparison_league,
+        "comparison_season": comparison_season,
+    }
+    return get_radar_data(player_id, metric_list, player_league, player_season, display_mode, comparison_position, filters)
 
 
 @router.get("/metrics")

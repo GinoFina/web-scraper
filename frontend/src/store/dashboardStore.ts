@@ -9,7 +9,7 @@ interface DashboardState {
   ageMax: number | undefined
   minutesMin: number | undefined
   minutesMax: number | undefined
-  league: string
+  leagues: string[]
   team: string
   selectedPlayers: number[]
 
@@ -31,7 +31,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   ageMax: undefined,
   minutesMin: undefined,
   minutesMax: undefined,
-  league: '',
+  leagues: [],
   team: '',
   selectedPlayers: [],
 
