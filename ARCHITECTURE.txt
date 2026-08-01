@@ -6,10 +6,9 @@ SOFASCORE SCOUTING APP - SYSTEM ARCHITECTURE (V2)
 -------------------------------------------------------------------------------
 Desktop application for a sports scouting agency. Extracts massive statistical 
 data from the Sofascore API, processes it mathematically to evaluate specific 
-profiles (Roles), and generates customizable PDF visual reports.
+profiles (Roles) using a DAX-like engine, and visualizes data in custom charts.
 
-Migrated from a monolithic Python script (sofascore_collector.py) to a 
-modern full-stack architecture.
+Migrated from a monolithic Python script to a modern full-stack architecture.
 
 2. TECHNOLOGY STACK
 -------------------------------------------------------------------------------
@@ -20,9 +19,7 @@ modern full-stack architecture.
 - Database:            SQLite3 (local, WAL mode, normalized schema).
 - Frontend:            React (Vite) + TailwindCSS v4 + TypeScript.
 - Visualizations:      Apache ECharts (via echarts-for-react).
-- Drag & Drop:         @dnd-kit/core (Report Builder, future).
 - State Management:    Zustand.
-- Packaging:           Tauri (deferred to future iteration).
 
 3. DIRECTORY STRUCTURE
 -------------------------------------------------------------------------------
@@ -38,19 +35,21 @@ project_root/
 │   │   ├── players.py              # GET /api/players, /api/players/{id}
 │   │   ├── analytics.py            # GET /api/analytics/scatter, /radar/{id}
 │   │   ├── sync.py                 # POST /api/sync/league, /update-all, WS
-│   │   ├── reports.py              # GET /api/reports/player-card/{id}, /proxy
+│   │   ├── reports.py              # GET /api/reports/player-card/{id}, /heatmap, /proxy
 │   │   └── filters.py              # GET /api/filters/* (dropdowns)
 │   ├── core/                       # Business logic & math
-│   │   ├── analytics.py            # Pandas: percentiles, averages, scores
-│   │   └── roles.json              # Role weight definitions (placeholder)
+│   │   ├── analytics.py            # Pandas: percentiles, averages, scatter/radar data
+│   │   └── roles.json              # Role weight definitions for scoring
 │   ├── scraper/                    # Sofascore data extraction
 │   │   ├── client.py               # curl_cffi wrapper with impersonation
-│   │   ├── collector.py            # Pipeline: league → enrich → recalculate
-│   │   └── config.py               # Constants, tournament maps, multipliers
+│   │   ├── collector.py            # Pipeline: league → enrich → recalculate → evaluate
+│   │   ├── config.py               # Constants, API fields, tournament maps
+│   │   ├── evaluator.py            # DAX role scoring algorithm implementation
+│   │   └── scoring_config.py       # Generated weights & valid positions for roles
 │   └── database/                   # SQLite layer
 │       ├── connection.py           # Singleton connection, WAL, schema init
-│       ├── schema.sql              # Full DDL
-│       └── repositories.py         # CRUD operations, pagination, filters
+│       ├── schema.sql              # Full DDL (players, season_stats, tracked_leagues, evaluations)
+│       └── repositories.py         # CRUD operations, pagination, filters, upserts
 │
 ├── frontend/                       # React + Vite + TailwindCSS
 │   ├── index.html
@@ -62,26 +61,17 @@ project_root/
 │       ├── App.tsx                 # Layout: Sidebar + Router
 │       ├── index.css               # Design system (dark theme, glass, anims)
 │       ├── components/
-│       │   └── Sidebar.tsx         # Collapsible navigation sidebar
 │       ├── features/
-│       │   ├── explorer/
-│       │   │   └── ExplorerPage.tsx # Data table + filters + pagination
-│       │   ├── dashboards/
-│       │   │   ├── DashboardPage.tsx # Scatter + radar + controls
-│       │   │   └── PitchSelector.tsx # SVG pitch with clickable positions
-│       │   ├── report_builder/
-│       │   │   └── ReportBuilderPage.tsx # DnD canvas (structural placeholder)
-│       │   └── sync/
-│       │       └── SyncPage.tsx     # League management + WS terminal
-│       ├── services/
-│       │   └── api.ts              # Axios + WebSocket API client
-│       └── store/
-│           ├── playerStore.ts      # Zustand: explorer filters/pagination
-│           └── dashboardStore.ts   # Zustand: chart metrics/selections
+│       │   ├── explorer/           # Data table + filters + pagination
+│       │   ├── dashboards/         # Scatter + radar + controls + Pitch Selector
+│       │   ├── report_builder/     # Heatmaps + detailed reports
+│       │   └── sync/               # League management + WS terminal
+│       ├── services/               # Axios + WebSocket API client
+│       └── store/                  # Zustand state slices
 │
 ├── ARCHITECTURE.txt                # This file
-├── schema.dbml                     # Relational schema reference
-└── sofascore_collector.py          # Legacy monolithic script (reference only)
+├── README.md                       # Setup and running instructions
+└── schema.dbml                     # Relational schema reference
 
 4. RUNNING THE APPLICATION
 -------------------------------------------------------------------------------
@@ -99,27 +89,30 @@ project_root/
 
 5. SCRAPER PIPELINE
 -------------------------------------------------------------------------------
-When a league URL is submitted via the Sync Panel:
-  1. league download: Fetches all player stats page by page from Sofascore API
-  2. enrich: Fills in missing specific_position, nationality, age via player endpoints
-  3. recalculate: Derives computed fields (percentages, totals) from raw data
+When a league URL is submitted via the Sync Panel, the pipeline runs 4 stages:
+  1. Download: Fetches all player stats (including basic running stats) page by page from the league API.
+  2. Enrich: Fills in missing specific_position, nationality, age, and running distance via individual player endpoints.
+  3. Recalculate: Derives computed fields (percentages, totals, "Total" consolidated row).
+  4. Evaluate: Calculates DAX-like scores (world_score, league_score) based on roles.
   
 This runs as a single atomic pipeline. WebSocket broadcasts real-time logs.
+Running stats (distance, sprints, speed) are supported for seasons 25/26 onwards.
 
-6. DATA PROCESSING
+6. DATA PROCESSING (EVALUATOR)
 -------------------------------------------------------------------------------
-All mathematical operations are handled by Pandas/Numpy in backend/core/:
-  - Percentile ranking within position groups
-  - Min-max normalization (0-1)
-  - Weighted role scoring based on roles.json definitions
-  - League quality multiplier adjustment
+Mathematical operations are handled in backend/core/analytics.py and backend/scraper/evaluator.py:
+  - Percentile ranking within position groups (Radar charts)
+  - Min-max normalization (0-1) across global/league pools (Evaluator)
+  - Weighted role scoring based on scoring_config.py definitions
   - Positional average computation for chart baselines
 
 CRITICAL RULE: Frontend never touches the DB. It only consumes JSON from FastAPI.
+Heatmaps are fetched LIVE by the frontend via the `/api/reports/heatmap/` proxy, never stored in DB.
 
 7. ANTI-BAN STRATEGY
 -------------------------------------------------------------------------------
 All scraping uses curl_cffi with Chrome TLS fingerprint impersonation.
+API URL structure uses `/unique-tournament/{id}/season/{id}/statistics/overall`.
 Rate limiting (configurable delay between requests) is enforced.
 The scraper runs in a background thread via asyncio.to_thread() to avoid
 blocking the FastAPI event loop.

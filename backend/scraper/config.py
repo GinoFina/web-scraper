@@ -79,4 +79,5 @@ LEAGUE_STAT_FIELDS = ",".join([
     "savedShotsFromInsideTheBox", "savedShotsFromOutsideTheBox",
     "goalsConceded", "goalsConcededInsideTheBox", "goalsConcededOutsideTheBox",
     "penaltiesSaved", "punches", "highClaims", "runsOut", "successfulRunsOut",
+    "numberOfSprints", "topSpeed",
 ])

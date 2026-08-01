@@ -98,6 +98,11 @@ CREATE TABLE IF NOT EXISTS season_stats (
     goals_conceded_outside_box  INTEGER,
     penalties_saved             INTEGER,
     punches                     INTEGER,
+
+    -- Running
+    distance_covered            REAL,
+    sprints                     INTEGER,
+    max_speed                   REAL,
     high_claims                 INTEGER,
     runs_out                    INTEGER,
     successful_runs_out         INTEGER,
@@ -105,7 +110,6 @@ CREATE TABLE IF NOT EXISTS season_stats (
     -- Metadata
     source      TEXT DEFAULT 'league',
     raw_json    TEXT,
-    heatmap     TEXT,
     fetched_at  TEXT DEFAULT (datetime('now')),
 
     UNIQUE(player_id, tournament_id, season_id, accumulation)

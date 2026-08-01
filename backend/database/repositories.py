@@ -212,11 +212,6 @@ def get_player_detail(conn: sqlite3.Connection, player_id: int) -> dict | None:
     s_list = []
     for s in stats:
         s_dict = dict(s)
-        if s_dict.get("heatmap"):
-            try:
-                s_dict["heatmap"] = json.loads(s_dict["heatmap"])
-            except Exception:
-                pass
         if s_dict.get("raw_json"):
             try:
                 s_dict["raw_json"] = json.loads(s_dict["raw_json"])
@@ -253,7 +248,6 @@ def upsert_stats(
     source: str = "league",
     accumulation: str = "total",
     raw_json: str | None = None,
-    heatmap: str | None = None,
 ) -> None:
     """Insert or update season stats from mapped stat dict."""
     m = mapped
@@ -276,7 +270,8 @@ def upsert_stats(
             saves, clean_sheets, saves_inside_box, saves_outside_box,
             goals_conceded, goals_conceded_inside_box, goals_conceded_outside_box,
             penalties_saved, punches, high_claims, runs_out, successful_runs_out,
-            source, raw_json, heatmap
+            distance_covered, sprints, max_speed,
+            source, raw_json
         ) VALUES (
             ?,?,?,?,?,?,?,?,?,
             ?,?,?,?,?,?,?,?,
@@ -288,7 +283,8 @@ def upsert_stats(
             ?,?,?,?,?,
             ?,?,?,?,
             ?,?,?,?,?,?,?,?,?,?,?,?,
-            ?,?,?
+            ?,?,?,
+            ?,?
         )
         ON CONFLICT(player_id, tournament_id, season_id, accumulation) DO UPDATE SET
             tournament_name             = COALESCE(NULLIF(excluded.tournament_name,''), tournament_name),
@@ -350,9 +346,11 @@ def upsert_stats(
             high_claims                 = COALESCE(excluded.high_claims, high_claims),
             runs_out                    = COALESCE(excluded.runs_out, runs_out),
             successful_runs_out         = COALESCE(excluded.successful_runs_out, successful_runs_out),
+            distance_covered            = COALESCE(excluded.distance_covered, distance_covered),
+            sprints                     = COALESCE(excluded.sprints, sprints),
+            max_speed                   = COALESCE(excluded.max_speed, max_speed),
             source                      = excluded.source,
             raw_json                    = excluded.raw_json,
-            heatmap                     = excluded.heatmap,
             fetched_at                  = datetime('now')
         """,
         (
@@ -380,7 +378,8 @@ def upsert_stats(
             m.get("goals_conceded"), m.get("goals_conceded_inside_box"), m.get("goals_conceded_outside_box"),
             m.get("penalties_saved"), m.get("punches"), m.get("high_claims"),
             m.get("runs_out"), m.get("successful_runs_out"),
-            source, raw_json, heatmap,
+            m.get("distance_covered"), m.get("sprints"), m.get("max_speed"),
+            source, raw_json,
         ),
     )
 
@@ -407,6 +406,7 @@ def generate_total_stats(conn: sqlite3.Connection):
         saves, clean_sheets, saves_inside_box, saves_outside_box,
         goals_conceded, goals_conceded_inside_box, goals_conceded_outside_box,
         penalties_saved, punches, high_claims, runs_out, successful_runs_out,
+        distance_covered, sprints, max_speed,
         source, raw_json, fetched_at
     )
     SELECT
@@ -442,6 +442,9 @@ def generate_total_stats(conn: sqlite3.Connection):
         SUM(saves), SUM(clean_sheets), SUM(saves_inside_box), SUM(saves_outside_box),
         SUM(goals_conceded), SUM(goals_conceded_inside_box), SUM(goals_conceded_outside_box),
         SUM(penalties_saved), SUM(punches), SUM(high_claims), SUM(runs_out), SUM(successful_runs_out),
+        SUM(distance_covered * minutes_played) / NULLIF(SUM(minutes_played), 0),
+        SUM(sprints * minutes_played) / NULLIF(SUM(minutes_played), 0),
+        MAX(max_speed),
         'aggregated', '{}', datetime('now')
     FROM season_stats s
     JOIN players p ON p.player_id = s.player_id
@@ -507,6 +510,9 @@ def generate_total_stats(conn: sqlite3.Connection):
         high_claims = excluded.high_claims,
         runs_out = excluded.runs_out,
         successful_runs_out = excluded.successful_runs_out,
+        distance_covered = excluded.distance_covered,
+        sprints = excluded.sprints,
+        max_speed = excluded.max_speed,
         fetched_at = excluded.fetched_at;
     """
     conn.execute(sql)

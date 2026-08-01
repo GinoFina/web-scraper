@@ -132,6 +132,9 @@ def get_available_metrics() -> list[dict]:
         {"key": "clearances", "label": "Clearances", "category": "Defense"},
         {"key": "blocked_shots", "label": "Blocked Shots", "category": "Defense"},
         {"key": "dispossessed", "label": "Dispossessed", "category": "Defense"},
+        {"key": "distance_covered", "label": "Distance Covered", "category": "Physical"},
+        {"key": "sprints", "label": "Sprints", "category": "Physical"},
+        {"key": "max_speed", "label": "Max Speed", "category": "Physical"},
     ]
 
 

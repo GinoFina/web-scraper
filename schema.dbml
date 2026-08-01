@@ -1,116 +1,98 @@
 // ===============================
-// TABLAS MAESTRAS (CATÁLOGOS)
-// ===============================
-
-Table COUNTRIES {
-  country_alpha2 varchar [primary key]
-  name varchar [not null]
-}
-
-Table TEAMS {
-  team_id integer [primary key]
-  name varchar [not null]
-}
-
-Table TOURNAMENTS {
-  tournament_id integer [primary key]
-  name varchar [not null]
-  multiplier float [note: 'Ej: 1.0 para Premier, 0.97 para España']
-}
-
-Table SEASONS {
-  season_id integer [primary key]
-  name varchar [not null]
-  year varchar
-}
-
-// ===============================
 // TABLAS PRINCIPALES
 // ===============================
 
-Table PLAYERS {
+Table players {
   player_id integer [primary key]
   name varchar [not null]
+  team varchar
   team_id integer
+  nationality varchar
   country_alpha2 varchar
-  position varchar [note: 'Posición general (D, M, F, G)']
-  specific_position varchar [note: 'Ej: LB/LM']
+  position varchar
+  specific_position varchar
   age integer
+  height integer
+  foot varchar
+  attributes varchar
   updated_at timestamp [default: `now()`]
 }
 
-Table TRACKED_LEAGUES {
+Table tracked_leagues {
   id integer [primary key]
-  tournament_id integer [not null]
-  season_id integer [not null]
   url varchar [not null, unique]
-  accumulation varchar [default: 'total', note: 'Configuración de qué se debe scrapear']
+  tournament_id integer
+  tournament_name varchar
+  season_id integer
+  season_name varchar
+  accumulation varchar [default: 'total']
   added_at timestamp [default: `now()`]
   last_updated timestamp
+  is_active integer [default: 1]
 }
 
 // ===============================
 // DATOS ESTADÍSTICOS (FACT TABLE)
 // ===============================
 
-Table SEASON_STATS {
+Table season_stats {
   id integer [primary key]
   player_id integer [not null]
   tournament_id integer [not null]
+  tournament_name varchar
   season_id integer [not null]
+  season_name varchar
+  season_year varchar
   team_id integer
   team_name varchar
-  accumulation varchar [default: 'total', note: 'total, perGame, per90']
-  fetched_at timestamp [default: `now()`]
+  accumulation varchar [default: 'total']
   
-  // Generales
+  // General
   appearances integer
   minutes_played integer
   goals integer
   assists integer
+  expected_goals float
+  expected_assists float
   rating float
+  penalty_goals integer
   
-  // Pases y Creación
+  // Passing & Creation
   accurate_passes integer
+  total_passes integer
+  accurate_passes_pct float
   key_passes integer
   big_chances_created integer
   accurate_long_balls integer
   total_long_balls integer
-  accurate_crosses integer
-  
-  // Derivados de Pases
-  accurate_passes_pct float
   accurate_long_balls_pct float
-  accurate_crosses_pct float
-  total_passes integer
+  accurate_crosses integer
   total_crosses integer
+  accurate_crosses_pct float
   
-  // Tiros y Finalización
-  penalty_goals integer
+  // Shooting
+  total_shots integer
   shots_on_target integer
   shots_off_target integer
   blocked_scoring_attempt integer
   big_chances_missed integer
-  total_shots integer
   
-  // Regates
+  // Dribbling
   dribbles_won integer
   dribbles_attempted integer
   dribbles_won_pct float
   
-  // Duelos Aéreos y Terrestres
+  // Aerial Duels
   aerial_duels_won integer
   aerial_duels_total integer
   aerial_duels_won_pct float
+  
+  // Ground Duels
   ground_duels_won integer
   ground_duels_total integer
   ground_duels_won_pct float
   
-  // Duelos Totales (Del script V2)
-  total_duels_won integer
-  total_duels_won_pct float
-  
-  // Defensa (Del script V2)
+  // Defense
   tackles integer
   interceptions integer
   clearances integer
@@ -118,8 +100,11 @@ Table SEASON_STATS {
   dispossessed integer
   offsides integer
   possession_lost integer
+  total_duels_won integer
+  total_duels_won_pct float
   
-  // Arqueros (Se mantienen por completitud de BD, aunque los ignores en UI)
+  // Goalkeeper
+  saves integer
   clean_sheets integer
   saves_inside_box integer
   saves_outside_box integer
@@ -128,14 +113,24 @@ Table SEASON_STATS {
   goals_conceded_outside_box integer
   penalties_saved integer
   punches integer
+  
+  // Running
+  distance_covered float
+  sprints integer
+  max_speed float
   high_claims integer
   runs_out integer
   successful_runs_out integer
-  saves integer
+  
+  // Metadata
+  source varchar [default: 'league']
+  raw_json varchar
+  fetched_at timestamp [default: `now()`]
 
   Indexes {
-    // Índice compuesto restaurado para prevenir colisiones
     (player_id, tournament_id, season_id, accumulation) [unique]
+    (tournament_id, season_id)
+    (player_id)
   }
 }
 
@@ -143,10 +138,10 @@ Table SEASON_STATS {
 // EVALUACIÓN (ALGORITMO DE SCOUTING)
 // ===============================
 
-Table PLAYER_EVALUATIONS {
+Table player_evaluations {
   id integer [primary key]
-  stats_id integer [not null, note: 'FK a SEASON_STATS']
-  role varchar [note: 'Ej: Creative Full-Back']
+  stats_id integer [not null]
+  role varchar
   role_score float
   league_score float
   world_score float
@@ -158,34 +153,8 @@ Table PLAYER_EVALUATIONS {
 }
 
 // ===============================
-// TABLA DE RESPALDO (AISLADA)
+// RELACIONES (FOREIGN KEYS LÓGICAS)
 // ===============================
 
-Table RAW_STATS_BACKUP {
-  id integer [primary key]
-  player_id integer [not null]
-  tournament_id integer [not null]
-  season_id integer [not null]
-  raw_json text [not null]
-  fetched_at timestamp [default: `now()`]
-}
-
-// ===============================
-// RELACIONES (FOREIGN KEYS)
-// ===============================
-
-Ref: PLAYERS.team_id > TEAMS.team_id
-Ref: PLAYERS.country_alpha2 > COUNTRIES.country_alpha2
-
-Ref: TRACKED_LEAGUES.tournament_id > TOURNAMENTS.tournament_id
-Ref: TRACKED_LEAGUES.season_id > SEASONS.season_id
-
-Ref: SEASON_STATS.player_id > PLAYERS.player_id
-Ref: SEASON_STATS.tournament_id > TOURNAMENTS.tournament_id
-Ref: SEASON_STATS.season_id > SEASONS.season_id
-
-Ref: PLAYER_EVALUATIONS.stats_id > SEASON_STATS.id
-
-Ref: RAW_STATS_BACKUP.player_id > PLAYERS.player_id
-Ref: RAW_STATS_BACKUP.tournament_id > TOURNAMENTS.tournament_id
-Ref: RAW_STATS_BACKUP.season_id > SEASONS.season_id
+Ref: season_stats.player_id > players.player_id
+Ref: player_evaluations.stats_id > season_stats.id

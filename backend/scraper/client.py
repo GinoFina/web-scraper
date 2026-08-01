@@ -39,8 +39,8 @@ class SofascoreClient:
 
     def get_player_stats(self, player_id: int, tournament_id: int, season_id: int) -> dict:
         return self.api_get(
-            f"/player/{player_id}/unique-tournament-statistics/{tournament_id}"
-            f"/season/{season_id}/type/overall"
+            f"/player/{player_id}/unique-tournament/{tournament_id}"
+            f"/season/{season_id}/statistics/overall"
         ).get("statistics", {})
 
     # ── Tournament endpoints ──────────────────────────────────────────────

@@ -108,6 +108,11 @@ def map_stats(raw: dict) -> dict:
         "assists": _g(s, "assists"),
         "expected_goals": _g(s, "expectedGoals"),
         "expected_assists": _g(s, "expectedAssists"),
+        
+        # Running
+        "distance_covered": round(_g(s, "distanceCovered", "kilometersCovered"), 2) if _g(s, "distanceCovered", "kilometersCovered") is not None else None,
+        "sprints": _g(s, "sprints", "numberOfSprints"),
+        "max_speed": round(_g(s, "maxSpeed", "topSpeed"), 2) if _g(s, "maxSpeed", "topSpeed") is not None else None,
         "rating": _g(s, "rating"),
         "penalty_goals": _g(s, "penaltyGoals"),
         "accurate_passes": acc_p,
@@ -237,7 +242,6 @@ def run_league_pipeline(
                     conn, player_id, tournament_id, player_meta, mapped,
                     source="league", accumulation=accumulation,
                     raw_json=json.dumps(stats_raw, ensure_ascii=False),
-                    heatmap=None,
                 )
             total_saved += 1
 
@@ -293,12 +297,13 @@ def _enrich_players(
     accumulation: str,
     log: LogCallback,
 ) -> int:
-    """Enrich players missing specific_position, nationality, or age."""
+    """Enrich players missing specific_position, nationality, age, or running stats."""
     rows = conn.execute("""
         SELECT DISTINCT p.player_id, p.name, s.tournament_id, s.season_id
         FROM players p JOIN season_stats s ON s.player_id = p.player_id
         WHERE p.nationality IS NULL OR p.nationality = ''
            OR p.specific_position IS NULL OR p.specific_position = ''
+           OR (s.distance_covered IS NULL AND s.sprints IS NOT NULL)
         ORDER BY p.name
     """).fetchall()
 

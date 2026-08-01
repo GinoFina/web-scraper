@@ -211,7 +211,9 @@ export default function ExplorerPage() {
             onChange={(e) => store.setFilter('position', e.target.value)}
           >
             <option value="">All Positions</option>
-            {filterOpts.positions.general.map((p) => (
+            {Array.from(new Set([...filterOpts.positions.general, ...filterOpts.positions.specific]))
+              .filter(p => p !== 'G')
+              .map((p) => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
@@ -223,7 +225,7 @@ export default function ExplorerPage() {
             onChange={(e) => store.setFilter('league', e.target.value)}
           >
             <option value="">All Leagues</option>
-            {filterOpts.leagues.map((l) => (
+            {filterOpts.leagues.filter(l => l.toLowerCase() !== 'total').map((l) => (
               <option key={l} value={l}>{l}</option>
             ))}
           </select>
@@ -235,7 +237,7 @@ export default function ExplorerPage() {
             onChange={(e) => store.setFilter('season', e.target.value)}
           >
             <option value="">All Seasons</option>
-            {filterOpts.seasons.map((s) => (
+            {filterOpts.seasons.filter(s => s.toLowerCase() !== 'total').map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
