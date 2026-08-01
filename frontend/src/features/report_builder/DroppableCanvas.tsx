@@ -12,6 +12,7 @@ import ReportScatterPlot from './components/ReportScatterPlot'
 import ReportHeatmap from './components/ReportHeatmap'
 import ReportImageBlock from './components/ReportImageBlock'
 import ReportPercentileBars from './components/ReportPercentileBars'
+import ReportHeadToHead from './components/ReportHeadToHead'
 
 function SortableItem({ item, playerId }: { item: DroppedItem, playerId: number | null }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
@@ -96,6 +97,8 @@ function SortableItem({ item, playerId }: { item: DroppedItem, playerId: number 
         return playerId ? <ReportHeatmap playerId={playerId} /> : <div className="p-4 border border-dashed rounded text-center flex-1">Please select a player first</div>
       case 'PercentileBars':
         return playerId ? <ReportPercentileBars playerId={playerId} config={item.config} /> : <div className="p-4 border border-dashed rounded text-center flex-1">Please select a player first</div>
+      case 'HeadToHead':
+        return playerId ? <ReportHeadToHead playerId={playerId} config={item.config} /> : <div className="p-4 border border-dashed rounded text-center flex-1">Please select a player first</div>
       case 'TextBlock':
         return <ReportTextBlock id={item.id} content={item.content || ''} />
       case 'ImageBlock':
@@ -119,7 +122,7 @@ function SortableItem({ item, playerId }: { item: DroppedItem, playerId: number 
 
       {/* Controls (hidden on print) */}
       <div className="absolute -top-3 -right-3 opacity-0 group-hover:opacity-100 transition-opacity print:hidden z-20 flex gap-1">
-        {['RadarChart', 'ScatterPlot', 'StatsTable'].includes(item.type) && (
+        {['RadarChart', 'ScatterPlot', 'StatsTable', 'HeadToHead', 'PercentileBars'].includes(item.type) && (
           <button
             onPointerDown={(e) => {
               e.stopPropagation()

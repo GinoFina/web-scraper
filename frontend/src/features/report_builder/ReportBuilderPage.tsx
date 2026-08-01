@@ -15,6 +15,7 @@ const PALETTE_ITEMS: { type: ComponentType, icon: string, label: string, desc: s
   { type: 'StatsTable', icon: '📋', label: 'Stats Table', desc: 'Key Season Statistics Grid' },
   { type: 'PitchMap', icon: '🔥', label: 'Heatmap', desc: 'Player Positional Heatmap' },
   { type: 'PercentileBars', icon: '📶', label: 'Percentile Bars', desc: 'Metric Percentile Progress' },
+  { type: 'HeadToHead', icon: '⚖️', label: 'Head-to-Head', desc: 'Diverging Percentile Comparison' },
   { type: 'ImageBlock', icon: '🖼️', label: 'Image', desc: 'Upload Custom Image' },
   { type: 'TextBlock', icon: '📝', label: 'Text Block', desc: 'Custom Text or Notes' },
 ]
@@ -28,7 +29,7 @@ export default function ReportBuilderPage() {
   useEffect(() => {
     const handleRequestAdd = (e: CustomEvent<ComponentType>) => {
       const type = e.detail
-      if (['RadarChart', 'ScatterPlot', 'StatsTable', 'PercentileBars'].includes(type)) {
+      if (['RadarChart', 'ScatterPlot', 'StatsTable', 'PercentileBars', 'HeadToHead'].includes(type)) {
         setPendingAddItem({ type })
       } else {
         addItem(type)
@@ -62,7 +63,7 @@ export default function ReportBuilderPage() {
     if (active.id.toString().startsWith('palette-') && over.id === 'canvas') {
       const type = active.data.current?.type as ComponentType
       if (type) {
-        if (['RadarChart', 'ScatterPlot', 'StatsTable', 'PercentileBars'].includes(type)) {
+        if (['RadarChart', 'ScatterPlot', 'StatsTable', 'PercentileBars', 'HeadToHead'].includes(type)) {
           setPendingAddItem({ type })
         } else {
           addItem(type)

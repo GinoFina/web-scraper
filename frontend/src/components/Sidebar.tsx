@@ -45,9 +45,8 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r transition-all duration-300 ease-out print:hidden ${
-        collapsed ? 'w-[68px]' : 'w-[220px]'
-      }`}
+      className={`flex flex-col border-r transition-all duration-300 ease-out print:hidden ${collapsed ? 'w-[68px]' : 'w-[220px]'
+        }`}
       style={{
         background: 'var(--color-surface-800)',
         borderColor: 'var(--color-border)',
@@ -77,10 +76,9 @@ export default function Sidebar() {
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? 'text-white'
-                  : 'hover:bg-[var(--color-surface-700)]'
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                ? 'text-white'
+                : 'hover:bg-[var(--color-surface-700)]'
               }`
             }
             style={({ isActive }) => ({

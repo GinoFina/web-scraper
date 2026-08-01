@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { DroppedItem, useReportStore } from '../../../store/reportStore'
 import { getPlayer, getMetrics, getLeagues, getSeasons } from '../../../services/api'
+import PlayerAutocomplete from './PlayerAutocomplete'
 
 const STATS_CATEGORIES = [
   { name: 'Generales', keys: ['appearances', 'minutes_played', 'goals', 'assists', 'rating'] },
@@ -59,8 +60,14 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
   const [minutesMin, setMinutesMin] = useState<number | undefined>(config.minutesMin)
   const [minutesMax, setMinutesMax] = useState<number | undefined>(config.minutesMax)
 
+  // HeadToHead State
+  const [player2Id, setPlayer2Id] = useState<number | null>(config.player2Id || null)
+  const [player2League, setPlayer2League] = useState<string>(config.player2League || 'Total')
+  const [player2Season, setPlayer2Season] = useState<string>(config.player2Season || 'Total')
+  const [player2Stats, setPlayer2Stats] = useState<any[]>([])
+
   useEffect(() => {
-    if (['ScatterPlot', 'RadarChart', 'PercentileBars'].includes(item.type)) {
+    if (['ScatterPlot', 'RadarChart', 'PercentileBars', 'HeadToHead'].includes(item.type)) {
       getMetrics().then((res: any) => {
         if (res && res.length > 0) {
           const formatted = res.map((m: any) => ({ key: m.key, label: m.label }))
@@ -89,7 +96,13 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
         setPlayerStats(res.stats)
       }
     })
-  }, [playerId, item.type, radarOptions.length])
+
+    if (player2Id) {
+      getPlayer(player2Id).then(res => {
+        if (res && res.stats) setPlayer2Stats(res.stats)
+      })
+    }
+  }, [playerId, player2Id, item.type, radarOptions.length])
 
   const playerPlayedLeagues = Array.from(new Set(
     playerStats
@@ -104,8 +117,15 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
       .filter(s => s && s.toLowerCase() !== 'total')
   ))
 
-  const combinedLeagues = Array.from(new Set([...playerPlayedLeagues, ...allLeagues])).sort()
-  const combinedSeasons = Array.from(new Set([...playerPlayedSeasons, ...allSeasons])).sort()
+  const p2PlayedLeagues = Array.from(new Set(
+    player2Stats.filter(s => player2Season === 'Total' || s.season_name === player2Season).map(s => s.tournament_name).filter(l => l && l.toLowerCase() !== 'total')
+  ))
+  const p2PlayedSeasons = Array.from(new Set(
+    player2Stats.filter(s => player2League === 'Total' || s.tournament_name === player2League).map(s => s.season_name).filter(s => s && s.toLowerCase() !== 'total')
+  ))
+
+  const combinedLeagues = Array.from(new Set([...playerPlayedLeagues, ...p2PlayedLeagues, ...allLeagues])).sort()
+  const combinedSeasons = Array.from(new Set([...playerPlayedSeasons, ...p2PlayedSeasons, ...allSeasons])).sort()
 
   const handleSave = () => {
     const baseConfig = {
@@ -119,7 +139,11 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
     } else if (item.type === 'RadarChart' || item.type === 'PercentileBars') {
       if (item.type === 'RadarChart' && selectedRadar.length < 3) return alert('Please select at least 3 metrics for the Radar Chart')
       if (item.type === 'PercentileBars' && selectedRadar.length === 0) return alert('Please select a metric')
-      onSave({ ...baseConfig, metrics: selectedRadar, comparisonPosition })
+      onSave({ ...baseConfig, metrics: selectedRadar, comparisonPosition, player2Id, player2League, player2Season })
+    } else if (item.type === 'HeadToHead') {
+      if (!player2Id) return alert('Please select a second player for the comparison')
+      if (selectedRadar.length === 0) return alert('Please select at least one metric')
+      onSave({ ...baseConfig, metrics: selectedRadar, player2Id, player2League, player2Season })
     } else if (item.type === 'StatsTable') {
       if (selectedStats.length === 0) return alert('Please select at least 1 statistic')
       onSave({ ...baseConfig, metrics: selectedStats, columns })
@@ -178,7 +202,38 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
             </div>
           </div>
 
-          {item.type !== 'StatsTable' && (
+          {['HeadToHead', 'RadarChart'].includes(item.type) && (
+            <div className="border border-[var(--color-border)] rounded p-3 bg-[var(--color-surface-900)] mt-3">
+              <h4 className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-accent-primary)] mb-2">FILTROS DEL SEGUNDO JUGADOR (VS)</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <div className="col-span-3">
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Select Player 2</label>
+                  <PlayerAutocomplete 
+                    onChange={(id) => setPlayer2Id(id || null)} 
+                    playerId={player2Id || null} 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">League Filter (P2)</label>
+                  <select value={player2League} onChange={e => setPlayer2League(e.target.value)} className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]">
+                    <option value="Total">Total</option>
+                    {p2PlayedLeagues.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Season Filter (P2)</label>
+                  <select value={player2Season} onChange={e => setPlayer2Season(e.target.value)} className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]">
+                    <option value="Total">Total</option>
+                    {p2PlayedSeasons.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {item.type !== 'StatsTable' && item.type !== 'HeadToHead' && (
             <>
               <div className="border border-[var(--color-border)] rounded p-3 bg-[var(--color-surface-900)] mt-3">
                 <h4 className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">FILTROS GENERALES</h4>
@@ -302,6 +357,27 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
 
           {item.type === 'RadarChart' && (
             <div className="space-y-3">
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                {STATS_CATEGORIES.map(cat => (
+                  <div key={cat.name} className="border border-[var(--color-border)] p-2 rounded bg-[var(--color-surface-900)]">
+                    <h5 className="font-bold text-[10px] uppercase text-[var(--color-text-primary)] mb-2 border-b border-[var(--color-border)] pb-1">{cat.name}</h5>
+                    <div className="grid grid-cols-2 gap-2">
+                      {cat.keys.map(key => (
+                        <label key={key} className="flex items-center gap-2 text-xs cursor-pointer hover:bg-[var(--color-surface-700)] p-1 rounded">
+                          <input type="checkbox" checked={selectedRadar.includes(key)} onChange={() => toggleRadar(key)} className="rounded bg-[var(--color-surface-800)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
+                          <span className="truncate">{key.replace(/_/g, ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {item.type === 'HeadToHead' && (
+            <div className="space-y-3">
+              <p className="text-xs text-[var(--color-text-secondary)] mb-2">Select metrics to compare head-to-head:</p>
               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
                 {STATS_CATEGORIES.map(cat => (
                   <div key={cat.name} className="border border-[var(--color-border)] p-2 rounded bg-[var(--color-surface-900)]">

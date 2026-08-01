@@ -171,7 +171,7 @@ export default function ExplorerPage() {
           </button>
           
           <select
-            className="input-dark text-sm"
+            className="input-dark text-sm w-[110px]"
             onChange={(e) => {
               if (!e.target.value) return;
               const metric = availableMetrics.find(m => m.key === e.target.value)
