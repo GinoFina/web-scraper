@@ -11,7 +11,9 @@ interface DashboardState {
   minutesMax: number | undefined
   leagues: string[]
   team: string
+  displayMode: string
   selectedPlayers: number[]
+  radarMetrics: string[]
 
   setMetricX: (v: string) => void
   setMetricY: (v: string) => void
@@ -20,6 +22,9 @@ interface DashboardState {
   setFilter: (key: string, value: unknown) => void
   togglePlayer: (id: number) => void
   clearPlayers: () => void
+  setDisplayMode: (v: string) => void
+  setRadarMetrics: (v: string[]) => void
+  resetFilters: () => void
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -33,7 +38,9 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   minutesMax: undefined,
   leagues: [],
   team: '',
+  displayMode: 'total',
   selectedPlayers: [],
+  radarMetrics: [],
 
   setMetricX: (v) => set({ metricX: v }),
   setMetricY: (v) => set({ metricY: v }),
@@ -47,4 +54,21 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         : [...state.selectedPlayers, id],
     })),
   clearPlayers: () => set({ selectedPlayers: [] }),
+  setDisplayMode: (v) => set({ displayMode: v }),
+  setRadarMetrics: (v) => set({ radarMetrics: v }),
+  resetFilters: () => set({
+    metricX: 'goals',
+    metricY: 'assists',
+    position: '',
+    topN: 50,
+    ageMin: undefined,
+    ageMax: undefined,
+    minutesMin: undefined,
+    minutesMax: undefined,
+    leagues: [],
+    team: '',
+    displayMode: 'total',
+    selectedPlayers: [],
+    radarMetrics: []
+  }),
 }))

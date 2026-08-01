@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { getPlayers, getPositions, getLeagues, getNationalities, getTeams, getSeasons } from '../../services/api'
+import { getPlayers, getPositions, getLeagues, getNationalities, getTeams, getSeasons, getMetrics } from '../../services/api'
 import { usePlayerStore } from '../../store/playerStore'
 
 interface FilterOptions {
@@ -9,6 +9,24 @@ interface FilterOptions {
   teams: string[]
   seasons: string[]
 }
+
+const DEFAULT_COLUMNS = [
+  { key: 'name', label: 'Player' },
+  { key: 'age', label: 'Age' },
+  { key: 'nationality', label: 'Nationality' },
+  { key: 'minutes_played', label: 'Minutes' },
+  { key: 'specific_position', label: 'Position' },
+  { key: 'team', label: 'Club' },
+  { key: 'tournament_name', label: 'League' },
+  { key: 'season_name', label: 'Season' },
+  { key: 'goals', label: 'G' },
+  { key: 'assists', label: 'A' },
+  { key: 'rating', label: 'Rating' },
+  { key: 'role', label: 'Role' },
+  { key: 'role_score', label: 'Role Score' },
+  { key: 'league_score', label: 'League Score' },
+  { key: 'world_score', label: 'World Score' },
+]
 
 export default function ExplorerPage() {
   const store = usePlayerStore()
@@ -25,13 +43,15 @@ export default function ExplorerPage() {
     teams: [],
     seasons: [],
   })
+  const [availableMetrics, setAvailableMetrics] = useState<{key: string, label: string, category: string}[]>([])
   const [loading, setLoading] = useState(false)
 
   // Load filter options
   useEffect(() => {
-    Promise.all([getPositions(), getLeagues(), getNationalities(), getTeams(), getSeasons()])
-      .then(([pos, leagues, nats, teams, seasons]) => {
+    Promise.all([getPositions(), getLeagues(), getNationalities(), getTeams(), getSeasons(), getMetrics()])
+      .then(([pos, leagues, nats, teams, seasons, metrics]) => {
         setFilterOpts({ positions: pos, leagues, nationalities: nats, teams, seasons })
+        setAvailableMetrics(metrics || [])
       })
       .catch(() => { })
   }, [])
@@ -118,23 +138,8 @@ export default function ExplorerPage() {
     return val.toString()
   }
 
-  const columns = [
-    { key: 'name', label: 'Player' },
-    { key: 'age', label: 'Age' },
-    { key: 'nationality', label: 'Nationality' },
-    { key: 'minutes_played', label: 'Minutes' },
-    { key: 'specific_position', label: 'Position' },
-    { key: 'team', label: 'Club' },
-    { key: 'tournament_name', label: 'League' },
-    { key: 'season_name', label: 'Season' },
-    { key: 'goals', label: 'G' },
-    { key: 'assists', label: 'A' },
-    { key: 'rating', label: 'Rating' },
-    { key: 'role', label: 'Role' },
-    { key: 'role_score', label: 'Role Score' },
-    { key: 'league_score', label: 'League Score' },
-    { key: 'world_score', label: 'World Score' },
-  ]
+  const [columns, setColumns] = useState(DEFAULT_COLUMNS)
+  const [draggedColIdx, setDraggedColIdx] = useState<number | null>(null)
 
   return (
     <div className="min-h-full flex flex-col gap-5 animate-fade-in">
@@ -158,9 +163,32 @@ export default function ExplorerPage() {
             <option value="perGame">Per Game</option>
             <option value="per90">Per 90</option>
           </select>
-          <button onClick={() => store.resetFilters()} className="btn-ghost text-xs">
+          <button onClick={() => {
+            store.resetFilters()
+            setColumns(DEFAULT_COLUMNS)
+          }} className="btn-ghost text-xs whitespace-nowrap">
             Reset Filters
           </button>
+          
+          <select
+            className="input-dark text-sm"
+            onChange={(e) => {
+              if (!e.target.value) return;
+              const metric = availableMetrics.find(m => m.key === e.target.value)
+              if (metric && !columns.find(c => c.key === metric.key)) {
+                setColumns([...columns, { key: metric.key, label: metric.label }])
+              }
+              e.target.value = "" // reset
+            }}
+            value=""
+          >
+            <option value="" disabled>+ Add Stat</option>
+            {availableMetrics.map(m => (
+              <option key={m.key} value={m.key} disabled={columns.some(c => c.key === m.key)}>
+                {m.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -171,7 +199,7 @@ export default function ExplorerPage() {
           <input
             type="text"
             placeholder="Search name..."
-            className="input-dark col-span-2"
+            className="input-dark"
             value={store.name}
             onChange={(e) => store.setFilter('name', e.target.value)}
           />
@@ -281,27 +309,64 @@ export default function ExplorerPage() {
         <table className="data-table">
           <thead>
             <tr>
-              {columns.map((col) => (
-                <th key={col.key} onClick={() => handleSort(col.key)}>
-                  {col.label}{sortIcon(col.key)}
+              {columns.map((col, idx) => (
+                <th 
+                  key={col.key} 
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedColIdx(idx)
+                    e.dataTransfer.effectAllowed = 'move'
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    if (draggedColIdx === null || draggedColIdx === idx) return
+                    const newCols = [...columns]
+                    const [draggedItem] = newCols.splice(draggedColIdx, 1)
+                    newCols.splice(idx, 0, draggedItem)
+                    setColumns(newCols)
+                    setDraggedColIdx(null)
+                  }}
+                  onClick={() => handleSort(col.key)}
+                  className="cursor-pointer hover:bg-[var(--color-surface-700)] select-none transition-colors group relative"
+                  style={{ opacity: draggedColIdx === idx ? 0.5 : 1 }}
+                  title="Arrastra para reordenar"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span>{col.label}{sortIcon(col.key)}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setColumns(columns.filter(c => c.key !== col.key))
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-full w-4 h-4 flex items-center justify-center transition-all"
+                      title="Quitar columna"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
-            {loading && store.page === 1 ? (
-              <tr>
-                <td colSpan={columns.length} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-                  Loading...
-                </td>
-              </tr>
-            ) : (data as any).error ? (
+          <tbody style={{ opacity: loading && store.page === 1 ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+            {(data as any).error ? (
               <tr>
                 <td colSpan={columns.length} className="text-center py-12 text-red-500 font-bold">
                   Error: {(data as any).error}
                 </td>
               </tr>
+            ) : data.data.length === 0 && loading ? (
+              <tr>
+                <td colSpan={columns.length} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
+                  Loading...
+                </td>
+              </tr>
             ) : data.data.length === 0 ? (
+
               <tr>
                 <td colSpan={columns.length} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
                   No players found. Add leagues from the Sync panel to get started.
@@ -310,28 +375,32 @@ export default function ExplorerPage() {
             ) : (
               data.data.map((p: any, i: number) => (
                 <tr key={`${p.player_id}-${i}`}>
-                  <td className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.name}</td>
-                  <td>{p.age ?? '—'}</td>
-                  <td>{p.nationality ?? '—'}</td>
-                  <td>{p.minutes_played ?? '—'}</td>
-                  <td>
-                    <span className="px-2 py-0.5 rounded text-xs font-medium" style={{
-                      background: 'var(--color-surface-600)',
-                      color: 'var(--color-accent-cyan)',
-                    }}>
-                      {p.specific_position || p.position || '—'}
-                    </span>
-                  </td>
-                  <td>{p.team ?? '—'}</td>
-                  <td>{p.tournament_name ?? '—'}</td>
-                  <td>{p.season_name ?? '—'}</td>
-                  <td style={{ color: 'var(--color-accent-green)' }}>{formatStat(p.goals, p)}</td>
-                  <td style={{ color: 'var(--color-accent-amber)' }}>{formatStat(p.assists, p)}</td>
-                  <td>{p.rating ? Number(p.rating).toFixed(2) : '—'}</td>
-                  <td className="text-xs">{p.role ?? '—'}</td>
-                  <td>{p.role_score ? Number(p.role_score).toFixed(2) : '—'}</td>
-                  <td>{p.league_score ? Number(p.league_score).toFixed(2) : '—'}</td>
-                  <td>{p.world_score ? Number(p.world_score).toFixed(2) : '—'}</td>
+                  {columns.map(col => {
+                    switch(col.key) {
+                      case 'name': return <td key={col.key} className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.name}</td>
+                      case 'age': return <td key={col.key}>{p.age ?? '—'}</td>
+                      case 'nationality': return <td key={col.key}>{p.nationality ?? '—'}</td>
+                      case 'minutes_played': return <td key={col.key}>{p.minutes_played ?? '—'}</td>
+                      case 'specific_position': return (
+                        <td key={col.key}>
+                          <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'var(--color-surface-600)', color: 'var(--color-accent-cyan)' }}>
+                            {p.specific_position || p.position || '—'}
+                          </span>
+                        </td>
+                      )
+                      case 'team': return <td key={col.key}>{p.team ?? '—'}</td>
+                      case 'tournament_name': return <td key={col.key}>{p.tournament_name ?? '—'}</td>
+                      case 'season_name': return <td key={col.key}>{p.season_name ?? '—'}</td>
+                      case 'goals': return <td key={col.key} style={{ color: 'var(--color-accent-green)' }}>{formatStat(p.goals, p)}</td>
+                      case 'assists': return <td key={col.key} style={{ color: 'var(--color-accent-amber)' }}>{formatStat(p.assists, p)}</td>
+                      case 'rating': return <td key={col.key}>{p.rating ? Number(p.rating).toFixed(2) : '—'}</td>
+                      case 'role': return <td key={col.key} className="text-xs">{p.role ?? '—'}</td>
+                      case 'role_score': return <td key={col.key}>{p.role_score ? Number(p.role_score).toFixed(2) : '—'}</td>
+                      case 'league_score': return <td key={col.key}>{p.league_score ? Number(p.league_score).toFixed(2) : '—'}</td>
+                      case 'world_score': return <td key={col.key}>{p.world_score ? Number(p.world_score).toFixed(2) : '—'}</td>
+                      default: return <td key={col.key}>{p[col.key] != null ? formatStat(p[col.key], p) : '—'}</td>
+                    }
+                  })}
                 </tr>
               ))
             )}

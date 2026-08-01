@@ -25,14 +25,14 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
 
   const [title, setTitle] = useState(config.title || '')
 
-  const [availableMetrics, setAvailableMetrics] = useState<{key: string, label: string}[]>([])
+  const [availableMetrics, setAvailableMetrics] = useState<{ key: string, label: string }[]>([])
 
   // Scatter State
   const [xAxis, setXAxis] = useState(config.xAxis || 'expected_goals')
   const [yAxis, setYAxis] = useState(config.yAxis || 'goals')
 
   // Radar State
-  const [radarOptions, setRadarOptions] = useState<{label: string, id: string}[]>([])
+  const [radarOptions, setRadarOptions] = useState<{ label: string, id: string }[]>([])
   const [selectedRadar, setSelectedRadar] = useState<string[]>(config.metrics || (item.type === 'PercentileBars' ? ['goals'] : ['goals', 'assists', 'key_passes', 'accurate_passes_pct', 'dribbles_won', 'tackles', 'interceptions', 'aerial_duels_won']))
   const [comparisonPosition, setComparisonPosition] = useState<string>(config.comparisonPosition || '')
 
@@ -44,11 +44,11 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
   const [playerStats, setPlayerStats] = useState<any[]>([])
   const [playerLeague, setPlayerLeague] = useState<string>(config.playerLeague || config.league || 'Total')
   const [playerSeason, setPlayerSeason] = useState<string>(config.playerSeason || config.season || 'Total')
-  
+
   const [comparisonLeagues, setComparisonLeagues] = useState<string[]>(config.comparisonLeagues ? config.comparisonLeagues.split(',') : (config.league && config.league !== 'Total' ? config.league.split(',') : []))
   const [comparisonSeasons, setComparisonSeasons] = useState<string[]>(config.comparisonSeasons ? config.comparisonSeasons.split(',') : (config.season && config.season !== 'Total' ? config.season.split(',') : []))
   const [displayMode, setDisplayMode] = useState<string>(config.displayMode || 'total')
-  
+
   const [allLeagues, setAllLeagues] = useState<string[]>([])
   const [allSeasons, setAllSeasons] = useState<string[]>([])
   const [isCompLeagueOpen, setIsCompLeagueOpen] = useState(false)
@@ -108,11 +108,11 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
   const combinedSeasons = Array.from(new Set([...playerPlayedSeasons, ...allSeasons])).sort()
 
   const handleSave = () => {
-    const baseConfig = { 
+    const baseConfig = {
       title, playerLeague, playerSeason, displayMode,
       comparisonLeagues: comparisonLeagues.length > 0 ? comparisonLeagues.join(',') : 'Total',
       comparisonSeasons: comparisonSeasons.length > 0 ? comparisonSeasons.join(',') : 'Total',
-      ageMin, ageMax, minutesMin, minutesMax 
+      ageMin, ageMax, minutesMin, minutesMax
     }
     if (item.type === 'ScatterPlot') {
       onSave({ ...baseConfig, xAxis, yAxis, comparisonPosition })
@@ -139,7 +139,7 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
       <div className="bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
-        
+
         <div className="p-4 border-b border-[var(--color-border)] flex justify-between items-center gap-4">
           <h2 className="text-lg font-bold text-[var(--color-text-primary)]">Configure {item.type}</h2>
           <button onClick={onClose} className="text-[var(--color-text-muted)] hover:text-white transition-colors">✕</button>
@@ -181,104 +181,104 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
           {item.type !== 'StatsTable' && (
             <>
               <div className="border border-[var(--color-border)] rounded p-3 bg-[var(--color-surface-900)] mt-3">
-              <h4 className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">FILTROS GENERALES</h4>
-              <div className="grid grid-cols-6 gap-3">
-                <div className="col-span-3 relative">
-                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Comparison Leagues</label>
-                  <div 
-                    className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white cursor-pointer flex justify-between items-center"
-                    onClick={() => setIsCompLeagueOpen(!isCompLeagueOpen)}
-                  >
-                    <span className="truncate">{comparisonLeagues.length > 0 ? comparisonLeagues.join(', ') : 'Total'}</span>
-                    <span className="text-xs text-[var(--color-text-muted)]">▼</span>
-                  </div>
-                  {isCompLeagueOpen && (
-                    <div className="absolute z-10 w-full mt-1 bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-xl max-h-48 overflow-y-auto">
-                      <label className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white border-b border-[var(--color-border)]">
-                        <input type="checkbox" checked={comparisonLeagues.length === 0} onChange={() => setComparisonLeagues([])} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
-                        Total
-                      </label>
-                      {combinedLeagues.map(l => (
-                        <label key={l} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white">
-                          <input type="checkbox" checked={comparisonLeagues.includes(l)} onChange={() => {
-                            setComparisonLeagues(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l])
-                          }} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
-                          <span className="truncate">{l}</span>
-                        </label>
-                      ))}
+                <h4 className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">FILTROS GENERALES</h4>
+                <div className="grid grid-cols-6 gap-3">
+                  <div className="col-span-3 relative">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Comparison Leagues</label>
+                    <div
+                      className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white cursor-pointer flex justify-between items-center"
+                      onClick={() => setIsCompLeagueOpen(!isCompLeagueOpen)}
+                    >
+                      <span className="truncate">{comparisonLeagues.length > 0 ? comparisonLeagues.join(', ') : 'Total'}</span>
+                      <span className="text-xs text-[var(--color-text-muted)]">▼</span>
                     </div>
-                  )}
-                </div>
-                
-                <div className="col-span-3 relative">
-                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Comparison Seasons</label>
-                  <div 
-                    className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white cursor-pointer flex justify-between items-center"
-                    onClick={() => setIsCompSeasonOpen(!isCompSeasonOpen)}
-                  >
-                    <span className="truncate">{comparisonSeasons.length > 0 ? comparisonSeasons.join(', ') : 'Total'}</span>
-                    <span className="text-xs text-[var(--color-text-muted)]">▼</span>
-                  </div>
-                  {isCompSeasonOpen && (
-                    <div className="absolute z-10 w-full mt-1 bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-xl max-h-48 overflow-y-auto">
-                      <label className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white border-b border-[var(--color-border)]">
-                        <input type="checkbox" checked={comparisonSeasons.length === 0} onChange={() => setComparisonSeasons([])} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
-                        Total
-                      </label>
-                      {combinedSeasons.map(s => (
-                        <label key={s} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white">
-                          <input type="checkbox" checked={comparisonSeasons.includes(s)} onChange={() => {
-                            setComparisonSeasons(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
-                          }} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
-                          <span className="truncate">{s}</span>
+                    {isCompLeagueOpen && (
+                      <div className="absolute z-10 w-full mt-1 bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-xl max-h-48 overflow-y-auto">
+                        <label className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white border-b border-[var(--color-border)]">
+                          <input type="checkbox" checked={comparisonLeagues.length === 0} onChange={() => setComparisonLeagues([])} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
+                          Total
                         </label>
-                      ))}
+                        {combinedLeagues.map(l => (
+                          <label key={l} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white">
+                            <input type="checkbox" checked={comparisonLeagues.includes(l)} onChange={() => {
+                              setComparisonLeagues(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l])
+                            }} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
+                            <span className="truncate">{l}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="col-span-3 relative">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Comparison Seasons</label>
+                    <div
+                      className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white cursor-pointer flex justify-between items-center"
+                      onClick={() => setIsCompSeasonOpen(!isCompSeasonOpen)}
+                    >
+                      <span className="truncate">{comparisonSeasons.length > 0 ? comparisonSeasons.join(', ') : 'Total'}</span>
+                      <span className="text-xs text-[var(--color-text-muted)]">▼</span>
                     </div>
-                  )}
-                </div>
-                
-              </div>
-            </div>
-            <div className="border border-[var(--color-border)] rounded p-3 bg-[var(--color-surface-900)] mt-3">
-              <h4 className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">FILTROS DEMOGRÁFICOS Y DE POSICIÓN</h4>
-              <div className="grid grid-cols-6 gap-3">
-                <div className="col-span-2">
-                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Average Position</label>
-                  <select value={comparisonPosition} onChange={e => setComparisonPosition(e.target.value)} className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]">
-                    <option value="">Auto (Player's Position)</option>
-                    <option value="GK">Goalkeeper (GK)</option>
-                    <option value="DC">Center Back (CB)</option>
-                    <option value="DR">Right Back (RB)</option>
-                    <option value="DL">Left Back (LB)</option>
-                    <option value="DM">Defensive Mid (DM)</option>
-                    <option value="MC">Central Mid (CM)</option>
-                    <option value="AM">Attacking Mid (AM)</option>
-                    <option value="MR">Right Mid (RM)</option>
-                    <option value="ML">Left Mid (LM)</option>
-                    <option value="RW">Right Wing (RW)</option>
-                    <option value="LW">Left Wing (LW)</option>
-                    <option value="ST">Striker (ST)</option>
-                  </select>
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Min Age</label>
-                  <input type="number" value={ageMin || ''} onChange={e => setAgeMin(e.target.value ? Number(e.target.value) : undefined)} placeholder="Min" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Max Age</label>
-                  <input type="number" value={ageMax || ''} onChange={e => setAgeMax(e.target.value ? Number(e.target.value) : undefined)} placeholder="Max" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Min Minutes</label>
-                  <input type="number" value={minutesMin || ''} onChange={e => setMinutesMin(e.target.value ? Number(e.target.value) : undefined)} placeholder="Min" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Max Minutes</label>
-                  <input type="number" value={minutesMax || ''} onChange={e => setMinutesMax(e.target.value ? Number(e.target.value) : undefined)} placeholder="Max" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
+                    {isCompSeasonOpen && (
+                      <div className="absolute z-10 w-full mt-1 bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-xl max-h-48 overflow-y-auto">
+                        <label className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white border-b border-[var(--color-border)]">
+                          <input type="checkbox" checked={comparisonSeasons.length === 0} onChange={() => setComparisonSeasons([])} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
+                          Total
+                        </label>
+                        {combinedSeasons.map(s => (
+                          <label key={s} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white">
+                            <input type="checkbox" checked={comparisonSeasons.includes(s)} onChange={() => {
+                              setComparisonSeasons(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
+                            }} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
+                            <span className="truncate">{s}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               </div>
-            </div>
-          </>
+              <div className="border border-[var(--color-border)] rounded p-3 bg-[var(--color-surface-900)] mt-3">
+                <h4 className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">FILTROS DEMOGRÁFICOS Y DE POSICIÓN</h4>
+                <div className="grid grid-cols-6 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Average Position</label>
+                    <select value={comparisonPosition} onChange={e => setComparisonPosition(e.target.value)} className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]">
+                      <option value="">Auto (Player's Position)</option>
+                      <option value="GK">Goalkeeper (GK)</option>
+                      <option value="DC">Center Back (CB)</option>
+                      <option value="DR">Right Back (RB)</option>
+                      <option value="DL">Left Back (LB)</option>
+                      <option value="DM">Defensive Mid (DM)</option>
+                      <option value="MC">Central Mid (CM)</option>
+                      <option value="AM">Attacking Mid (AM)</option>
+                      <option value="MR">Right Mid (RM)</option>
+                      <option value="ML">Left Mid (LM)</option>
+                      <option value="RW">Right Wing (RW)</option>
+                      <option value="LW">Left Wing (LW)</option>
+                      <option value="ST">Striker (ST)</option>
+                    </select>
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Min Age</label>
+                    <input type="number" value={ageMin || ''} onChange={e => setAgeMin(e.target.value ? Number(e.target.value) : undefined)} placeholder="Min" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Max Age</label>
+                    <input type="number" value={ageMax || ''} onChange={e => setAgeMax(e.target.value ? Number(e.target.value) : undefined)} placeholder="Max" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Min Minutes</label>
+                    <input type="number" value={minutesMin || ''} onChange={e => setMinutesMin(e.target.value ? Number(e.target.value) : undefined)} placeholder="Min" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Max Minutes</label>
+                    <input type="number" value={minutesMax || ''} onChange={e => setMinutesMax(e.target.value ? Number(e.target.value) : undefined)} placeholder="Max" className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]" />
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
 
@@ -324,9 +324,9 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
             <div className="space-y-3">
               <div>
                 <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Metric</label>
-                <select 
-                  value={selectedRadar[0] || ''} 
-                  onChange={e => setSelectedRadar([e.target.value])} 
+                <select
+                  value={selectedRadar[0] || ''}
+                  onChange={e => setSelectedRadar([e.target.value])}
                   className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]"
                 >
                   <option value="">Select a metric...</option>
@@ -341,7 +341,7 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
               <div>
                 <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Layout (Columns)</label>
                 <select value={columns} onChange={e => setColumns(Number(e.target.value))} className="w-full bg-[var(--color-surface-900)] border border-[var(--color-border)] rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[var(--color-accent-primary)]">
-                  <option value={1}>1 Column (List)</option>
+                  <option value={1}>1 Column</option>
                   <option value={2}>2 Columns</option>
                   <option value={3}>3 Columns</option>
                   <option value={4}>4 Columns</option>

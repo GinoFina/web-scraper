@@ -119,13 +119,18 @@ def get_players_paginated(
 
     where = " AND ".join(conditions) if conditions else "1=1"
 
+    # Dynamically fetch all columns from season_stats for allowed_sorts
+    if not hasattr(get_players_paginated, "allowed_s_cols"):
+        get_players_paginated.allowed_s_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(season_stats)").fetchall()
+        }
+
     # Validate sort column to prevent injection
     allowed_sorts = {
         "name", "age", "team", "nationality", "position", "specific_position",
-        "minutes_played", "goals", "assists", "rating", "appearances",
-        "tournament_name", "season_name",
-        "role_score", "league_score", "world_score",
-    }
+        "role", "role_score", "league_score", "world_score",
+    }.union(get_players_paginated.allowed_s_cols)
+    
     if sort_by not in allowed_sorts:
         sort_by = "name"
     sort_direction = "DESC" if sort_dir.lower() == "desc" else "ASC"
@@ -133,7 +138,7 @@ def get_players_paginated(
     # Prefix sort column
     if sort_by in ("name", "age", "team", "nationality", "position", "specific_position"):
         order_col = f"p.{sort_by}"
-    elif sort_by in ("role_score", "league_score", "world_score"):
+    elif sort_by in ("role", "role_score", "league_score", "world_score"):
         order_col = f"e.{sort_by}"
     else:
         order_col = f"s.{sort_by}"
@@ -155,12 +160,8 @@ def get_players_paginated(
             SELECT
                 p.player_id, p.name, p.age, COALESCE(s.team_name, p.team) as team, s.team_id as team_id, p.nationality,
                 p.country_alpha2, p.position, p.specific_position,
-                s.minutes_played, s.goals, s.assists, s.rating, s.appearances,
-                s.tournament_name, s.season_name,
-                s.key_passes, s.big_chances_created, s.accurate_passes_pct,
-                s.dribbles_won, s.dribbles_won_pct,
-                s.tackles, s.interceptions, s.aerial_duels_won_pct,
                 e.role, e.role_score, e.league_score, e.world_score,
+                s.*,
                 ROW_NUMBER() OVER (PARTITION BY p.player_id ORDER BY s.season_year DESC, s.fetched_at DESC) as rn
             FROM players p
             LEFT JOIN season_stats s ON s.player_id = p.player_id

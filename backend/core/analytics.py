@@ -45,6 +45,9 @@ def aggregate_player_stats(df: pd.DataFrame) -> pd.DataFrame:
     sum_cols = [c for c in numeric_cols if c not in skip_sum and not c.endswith("_pct")]
     for c in sum_cols:
         agg_dict[c] = "sum"
+        
+    if "rating" in df.columns:
+        agg_dict["rating"] = "mean"
 
     agg_df = df.groupby("player_id", as_index=False).agg(agg_dict)
 
@@ -56,6 +59,10 @@ def aggregate_player_stats(df: pd.DataFrame) -> pd.DataFrame:
         agg_df["aerial_duels_won_pct"] = np.where(agg_df["aerial_duels_total"] > 0, (agg_df["aerial_duels_won"] / agg_df["aerial_duels_total"]) * 100, 0)
     if "ground_duels_total" in agg_df.columns and "ground_duels_won" in agg_df.columns:
         agg_df["ground_duels_won_pct"] = np.where(agg_df["ground_duels_total"] > 0, (agg_df["ground_duels_won"] / agg_df["ground_duels_total"]) * 100, 0)
+    if "total_crosses" in agg_df.columns and "accurate_crosses" in agg_df.columns:
+        agg_df["accurate_crosses_pct"] = np.where(agg_df["total_crosses"] > 0, (agg_df["accurate_crosses"] / agg_df["total_crosses"]) * 100, 0)
+    if "total_long_balls" in agg_df.columns and "accurate_long_balls" in agg_df.columns:
+        agg_df["accurate_long_balls_pct"] = np.where(agg_df["total_long_balls"] > 0, (agg_df["accurate_long_balls"] / agg_df["total_long_balls"]) * 100, 0)
     if "total_duels_won" in agg_df.columns and "ground_duels_total" in agg_df.columns and "aerial_duels_total" in agg_df.columns:
         tot_duels = agg_df["ground_duels_total"] + agg_df["aerial_duels_total"]
         agg_df["total_duels_won_pct"] = np.where(tot_duels > 0, (agg_df["total_duels_won"] / tot_duels) * 100, 0)
@@ -125,7 +132,6 @@ def get_available_metrics() -> list[dict]:
         {"key": "clearances", "label": "Clearances", "category": "Defense"},
         {"key": "blocked_shots", "label": "Blocked Shots", "category": "Defense"},
         {"key": "dispossessed", "label": "Dispossessed", "category": "Defense"},
-        {"key": "possession_lost", "label": "Possession Lost", "category": "Defense"},
     ]
 
 
