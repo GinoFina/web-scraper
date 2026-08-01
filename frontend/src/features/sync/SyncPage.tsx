@@ -45,7 +45,7 @@ export default function SyncPage() {
       wsRef.current = ws
     }
     connect()
-    
+
     return () => {
       if (ws) {
         ws.onclose = null // prevent reconnect on unmount
@@ -115,7 +115,7 @@ export default function SyncPage() {
   })
 
   return (
-    <div className="min-h-full flex flex-col gap-5 animate-fade-in">
+    <div className="min-h-full flex flex-col gap-5 animate-fade-in" style={{ paddingLeft: '14px', paddingRight: '14px' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -240,7 +240,7 @@ export default function SyncPage() {
                       </div>
 
                       {/* Dropdown for Older Seasons (pushes content down) */}
-                      <div 
+                      <div
                         className="relative overflow-hidden transition-all duration-300 ease-in-out"
                         style={{
                           maxHeight: isExpanded ? '500px' : '0px',

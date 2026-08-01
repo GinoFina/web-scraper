@@ -632,22 +632,22 @@ def recalculate_derived(conn: sqlite3.Connection) -> int:
               AND (shots_on_target IS NOT NULL OR shots_off_target IS NOT NULL OR blocked_scoring_attempt IS NOT NULL)""",
         """UPDATE season_stats SET accurate_passes_pct =
             ROUND(CAST(accurate_passes AS REAL) / NULLIF(total_passes,0) * 100, 1)
-            WHERE accurate_passes_pct IS NULL AND accurate_passes IS NOT NULL AND total_passes IS NOT NULL""",
+            WHERE accurate_passes_pct IS NULL AND accurate_passes IS NOT NULL AND total_passes > 0""",
         """UPDATE season_stats SET accurate_long_balls_pct =
             ROUND(CAST(accurate_long_balls AS REAL) / NULLIF(total_long_balls,0) * 100, 1)
-            WHERE accurate_long_balls_pct IS NULL AND accurate_long_balls IS NOT NULL AND total_long_balls IS NOT NULL""",
+            WHERE accurate_long_balls_pct IS NULL AND accurate_long_balls IS NOT NULL AND total_long_balls > 0""",
         """UPDATE season_stats SET accurate_crosses_pct =
             ROUND(CAST(accurate_crosses AS REAL) / NULLIF(total_crosses,0) * 100, 1)
-            WHERE accurate_crosses_pct IS NULL AND accurate_crosses IS NOT NULL AND total_crosses IS NOT NULL""",
+            WHERE accurate_crosses_pct IS NULL AND accurate_crosses IS NOT NULL AND total_crosses > 0""",
         """UPDATE season_stats SET total_duels_won_pct =
             ROUND(CAST(total_duels_won AS REAL) / NULLIF(
                 (COALESCE(aerial_duels_total,0) + COALESCE(ground_duels_total,0)), 0) * 100, 1)
             WHERE total_duels_won_pct IS NULL
               AND total_duels_won IS NOT NULL
-              AND (aerial_duels_total IS NOT NULL OR ground_duels_total IS NOT NULL)""",
+              AND (aerial_duels_total > 0 OR ground_duels_total > 0)""",
         """UPDATE season_stats SET dribbles_won_pct =
             ROUND(CAST(dribbles_won AS REAL) / NULLIF(dribbles_attempted,0) * 100, 1)
-            WHERE dribbles_won_pct IS NULL AND dribbles_won IS NOT NULL AND dribbles_attempted IS NOT NULL""",
+            WHERE dribbles_won_pct IS NULL AND dribbles_won IS NOT NULL AND dribbles_attempted > 0""",
         """UPDATE season_stats SET aerial_duels_won_pct =
             ROUND(CAST(aerial_duels_won AS REAL) / NULLIF(aerial_duels_total,0) * 100, 1)
             WHERE aerial_duels_won_pct IS NULL

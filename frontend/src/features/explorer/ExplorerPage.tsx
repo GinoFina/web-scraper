@@ -43,7 +43,7 @@ export default function ExplorerPage() {
     teams: [],
     seasons: [],
   })
-  const [availableMetrics, setAvailableMetrics] = useState<{key: string, label: string, category: string}[]>([])
+  const [availableMetrics, setAvailableMetrics] = useState<{ key: string, label: string, category: string }[]>([])
   const [loading, setLoading] = useState(false)
 
   // Load filter options
@@ -142,7 +142,7 @@ export default function ExplorerPage() {
   const [draggedColIdx, setDraggedColIdx] = useState<number | null>(null)
 
   return (
-    <div className="min-h-full flex flex-col gap-5 animate-fade-in">
+    <div className="min-h-full flex flex-col gap-5 animate-fade-in" style={{ paddingLeft: '14px', paddingRight: '4px' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -169,7 +169,7 @@ export default function ExplorerPage() {
           }} className="btn-ghost text-xs whitespace-nowrap">
             Reset Filters
           </button>
-          
+
           <select
             className="input-dark text-sm w-[110px]"
             onChange={(e) => {
@@ -310,8 +310,8 @@ export default function ExplorerPage() {
           <thead>
             <tr>
               {columns.map((col, idx) => (
-                <th 
-                  key={col.key} 
+                <th
+                  key={col.key}
                   draggable
                   onDragStart={(e) => {
                     setDraggedColIdx(idx)
@@ -376,7 +376,7 @@ export default function ExplorerPage() {
               data.data.map((p: any, i: number) => (
                 <tr key={`${p.player_id}-${i}`}>
                   {columns.map(col => {
-                    switch(col.key) {
+                    switch (col.key) {
                       case 'name': return <td key={col.key} className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.name}</td>
                       case 'age': return <td key={col.key}>{p.age ?? '—'}</td>
                       case 'nationality': return <td key={col.key}>{p.nationality ?? '—'}</td>
@@ -404,7 +404,7 @@ export default function ExplorerPage() {
                 </tr>
               ))
             )}
-            {loading && store.page > 1 && (
+            {loading && data.data.length > 0 && (
               <tr>
                 <td colSpan={columns.length} className="text-center py-4 text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>
                   Loading more...

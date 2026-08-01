@@ -10,7 +10,7 @@ export default function App() {
     <BrowserRouter>
       <div className="flex h-screen w-screen overflow-hidden bg-surface-900 print:h-auto print:overflow-visible">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 print:p-0 print:overflow-visible">
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-10 pb-10 print:p-0 print:overflow-visible">
           <div className="max-w-[1600px] mx-auto w-full h-full print:h-auto">
             <Routes>
               <Route path="/explorer" element={<ExplorerPage />} />

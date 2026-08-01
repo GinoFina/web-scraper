@@ -84,7 +84,7 @@ export default function ReportBuilderPage() {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} modifiers={[restrictToWindowEdges]}>
-      <div className="h-full flex flex-col gap-5 animate-fade-in print:p-0 print:h-auto print:block">
+      <div className="h-full flex flex-col gap-5 animate-fade-in print:p-0 print:h-auto print:block" style={{ paddingLeft: '14px', paddingRight: '4px' }}>
 
         {/* Header - Hidden on print */}
         <div className="flex justify-between items-center print:hidden w-full">
@@ -132,7 +132,7 @@ export default function ReportBuilderPage() {
         <div className="flex-1 grid grid-cols-[280px_1fr] gap-5 min-h-0 print:block print:h-auto">
 
           {/* Component Palette - Hidden on print */}
-          <div className="glass-card p-4 flex flex-col gap-3 overflow-auto print:hidden">
+          <div className="glass-card p-4 flex flex-col gap-3 overflow-auto print:hidden self-start max-h-full">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
               Components
             </h3>

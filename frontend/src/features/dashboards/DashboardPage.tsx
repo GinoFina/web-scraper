@@ -246,7 +246,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-full flex flex-col gap-5 animate-fade-in overflow-hidden">
+    <div className="min-h-full flex flex-col gap-5 animate-fade-in overflow-hidden" style={{ paddingLeft: '14px', paddingRight: '14px' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -363,18 +363,21 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0" style={{ paddingBottom: '10px' }}>
         {/* Scatter (2/3 width) */}
         <div className="glass-card p-4 lg:col-span-2 flex flex-col">
           <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>
             {metricLabel(store.metricX)} vs {metricLabel(store.metricY)}
-            {loading && <span className="ml-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>Loading...</span>}
           </h3>
           <div className="flex-1 min-h-0">
-            {scatterOption ? (
+            {loading && !scatterOption ? (
+              <div className="h-full flex items-center justify-center text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                Loading...
+              </div>
+            ) : scatterOption ? (
               <ReactECharts option={scatterOption} onEvents={onEvents} style={{ height: '100%', width: '100%' }} />
             ) : (
-              <div className="h-full flex items-center justify-center" style={{ color: 'var(--color-text-muted)' }}>
+              <div className="h-full flex items-center justify-center text-xs" style={{ color: 'var(--color-text-muted)' }}>
                 No data. Sync leagues first.
               </div>
             )}
