@@ -115,7 +115,7 @@ export default function SyncPage() {
   })
 
   return (
-    <div className="min-h-full flex flex-col gap-5 animate-fade-in" style={{ paddingLeft: '14px', paddingRight: '14px' }}>
+    <div className="min-h-full flex flex-col gap-5 animate-fade-in overflow-hidden" style={{ paddingLeft: '14px', paddingRight: '14px', paddingBottom: '10px' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

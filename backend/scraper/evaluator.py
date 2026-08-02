@@ -1,8 +1,15 @@
 import sqlite3
+import json
+from pathlib import Path
 from collections import defaultdict
-from scraper.scoring_config import ROLES_CONFIG
-from database import repositories as repo
 from typing import Callable
+
+# Load unified roles config
+ROLES_CONFIG_PATH = Path(__file__).parent.parent / "core" / "roles_config.json"
+with open(ROLES_CONFIG_PATH, "r", encoding="utf-8") as f:
+    ROLES_CONFIG = json.load(f)
+from database import repositories as repo
+from scraper.config import get_league_multipliers
 
 def _noop_log(level: str, msg: str) -> None:
     pass
@@ -12,6 +19,8 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
     Evaluate player roles based on DAX scoring configuration.
     Calculates both World Score (global pool) and League Score (tournament pool).
     """
+    
+    LEAGUE_MULTIPLIERS = get_league_multipliers()
     
     # 1. Collect all stats needed
     all_stats = set()
@@ -63,12 +72,37 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
     # We also need their specific_position from players table
     select_cols = ", ".join(f"s.{c}" for c in actual_stats)
     sql_players = f"""
-        SELECT s.id as stats_id, s.tournament_id, p.position, p.specific_position, {select_cols}
+        SELECT s.id as stats_id, s.tournament_id, p.player_id, p.position, p.specific_position, {select_cols}
         FROM season_stats s
         JOIN players p ON p.player_id = s.player_id
         WHERE s.minutes_played >= 180
     """
     players = conn.execute(sql_players).fetchall()
+    
+    # 5. Pre-calculate weighted multipliers for "Total" rows (tournament_id = 0)
+    player_multipliers = {}
+    sql_mults = """
+        SELECT player_id, tournament_id, minutes_played
+        FROM season_stats
+        WHERE tournament_id != 0 AND minutes_played > 0
+    """
+    for r in conn.execute(sql_mults).fetchall():
+        pid = r["player_id"]
+        tid = r["tournament_id"]
+        mins = r["minutes_played"] or 0
+        mult = LEAGUE_MULTIPLIERS.get(int(tid), 0.5)
+        
+        if pid not in player_multipliers:
+            player_multipliers[pid] = {"mins": 0, "weighted": 0.0}
+            
+        player_multipliers[pid]["mins"] += mins
+        player_multipliers[pid]["weighted"] += (mult * mins)
+
+    for pid, data in player_multipliers.items():
+        if data["mins"] > 0:
+            player_multipliers[pid] = data["weighted"] / data["mins"]
+        else:
+            player_multipliers[pid] = 0.5
     
     log("info", f"Evaluating roles for {len(players)} eligible season records...")
     
@@ -85,7 +119,7 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
                 pos = p["position"] or ""
             
             best_role = None
-            best_world_score = -1.0
+            best_role_score = -1.0
             best_league_score = -1.0
             
             # Expand generic positions to specific roles
@@ -133,23 +167,31 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
                     if l_max > l_min:
                         league_score += weight * ((val - l_min) / (l_max - l_min))
                 
-                world_score_final = min(100.0, max(0.0, world_score * 100))
+                role_score_final = min(100.0, max(0.0, world_score * 100))
                 league_score_final = min(100.0, max(0.0, league_score * 100))
                 
-                if world_score_final > best_world_score:
-                    best_world_score = world_score_final
+                if role_score_final > best_role_score:
+                    best_role_score = role_score_final
                     best_league_score = league_score_final
                     best_role = role_name
             
             # Save only the best role
             if best_role:
+                # Apply multiplier for world score (default to a low multiplier like 0.5 if league is unknown)
+                if int(t_id) == 0:
+                    multiplier = player_multipliers.get(p["player_id"], 0.5)
+                else:
+                    multiplier = LEAGUE_MULTIPLIERS.get(int(t_id), 0.5)
+                
+                final_world_score = best_role_score * multiplier
+                
                 repo.upsert_evaluation(
                     conn, 
                     stats_id=stats_id,
                     role=best_role,
-                    role_score=best_world_score,
+                    role_score=best_role_score,
                     league_score=best_league_score,
-                    world_score=best_world_score
+                    world_score=final_world_score
                 )
                 evaluated_count += 1
                 

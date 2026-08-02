@@ -11,10 +11,9 @@ import pandas as pd
 
 from database.connection import get_connection
 from database import repositories as repo
-from scraper.config import LEAGUE_MULTIPLIERS
 
 # Load role definitions
-_ROLES_PATH = Path(__file__).resolve().parent / "roles.json"
+_ROLES_PATH = Path(__file__).resolve().parent / "roles_config.json"
 
 
 def _load_roles() -> dict:

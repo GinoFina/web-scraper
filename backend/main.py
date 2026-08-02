@@ -12,6 +12,7 @@ from api.analytics import router as analytics_router
 from api.sync import router as sync_router
 from api.reports import router as reports_router
 from api.filters import router as filters_router
+from api.config import router as config_router
 
 
 @asynccontextmanager
@@ -45,6 +46,7 @@ app.include_router(analytics_router)
 app.include_router(sync_router)
 app.include_router(reports_router)
 app.include_router(filters_router)
+app.include_router(config_router)
 
 
 @app.get("/")

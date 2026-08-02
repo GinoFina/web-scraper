@@ -39,25 +39,18 @@ TOURNAMENT_NAMES: dict[int, str] = {
     11653: "Chile 1", 16736: "Bolivia 1", 17073: "Spain 3",
 }
 
-# tournament_id -> league quality multiplier (logarithmic scale based on Opta)
-LEAGUE_MULTIPLIERS: dict[int, float] = {
-    8: 0.9766, 17: 1.0, 18: 0.9504, 20: 0.9401, 22: 0.8758,
-    23: 0.9757, 24: 0.9169, 34: 0.9738, 35: 0.9794, 37: 0.9363,
-    38: 0.954, 39: 0.9461, 40: 0.9306, 41: 0.8809, 44: 0.9346,
-    45: 0.9229, 46: 0.8636, 47: 0.8532, 52: 0.9379, 53: 0.9223,
-    54: 0.9306, 55: 0.7851, 65: 0.7663, 67: 0.7972, 68: 0.7972,
-    152: 0.9205, 154: 0.8456, 155: 0.9509, 170: 0.9412, 172: 0.9294,
-    178: 0.8155, 182: 0.9223, 183: 0.8867, 185: 0.93, 187: 0.9247,
-    188: 0.8675, 196: 0.9351, 202: 0.9429, 203: 0.9306, 210: 0.8909,
-    211: 0.901, 212: 0.9056, 215: 0.9311, 218: 0.8997, 222: 0.8936,
-    231: 0.899, 238: 0.953, 240: 0.9368, 242: 0.9407, 247: 0.897,
-    278: 0.9241, 325: 0.9488, 406: 0.9049, 410: 0.9199, 671: 0.8773,
-    675: 0.8003, 678: 0.5, 703: 0.9181, 704: 0.8766, 720: 0.8902,
-    955: 0.9199, 11085: 0.8175, 11090: 0.8175, 11536: 0.9317,
-    11539: 0.9317, 11540: 0.9271, 11541: 0.9271, 11620: 0.9317,
-    11621: 0.9317, 11653: 0.9229, 16736: 0.9075, 17073: 0.8997,
-}
+import json
+from pathlib import Path
 
+def get_league_multipliers() -> dict[int, float]:
+    path = Path(__file__).parent.parent / "core" / "league_multipliers.json"
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return {int(k): float(v) for k, v in data.items()}
+    except Exception:
+        # Fallback if file doesn't exist
+        return {}
 # Fields requested from the league statistics endpoint
 LEAGUE_STAT_FIELDS = ",".join([
     "appearances", "minutesPlayed", "goals", "assists", "rating",

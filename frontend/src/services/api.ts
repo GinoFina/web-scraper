@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export const API_BASE = 'http://localhost:8000'
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE,
   timeout: 300000, // 5 minutes timeout for scraping operations
 })

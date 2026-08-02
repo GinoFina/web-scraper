@@ -4,6 +4,7 @@ import ExplorerPage from './features/explorer/ExplorerPage'
 import DashboardPage from './features/dashboards/DashboardPage'
 import ReportBuilderPage from './features/report_builder/ReportBuilderPage'
 import SyncPage from './features/sync/SyncPage'
+import { ScoringPage } from './features/settings/ScoringPage'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
               <Route path="/dashboards" element={<DashboardPage />} />
               <Route path="/reports" element={<ReportBuilderPage />} />
               <Route path="/sync" element={<SyncPage />} />
+              <Route path="/settings/scoring" element={<ScoringPage />} />
               <Route path="*" element={<Navigate to="/explorer" replace />} />
             </Routes>
           </div>

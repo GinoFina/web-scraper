@@ -123,7 +123,11 @@ export default function ExplorerPage() {
 
   const formatStat = (val: number | undefined, player: any) => {
     if (val == null) return '—'
-    if (store.displayMode === 'total') return val.toString()
+    
+    // Helper to format any raw value cleanly
+    const formatRaw = (v: number) => Number.isInteger(v) ? v.toString() : Number(v.toFixed(2)).toString()
+
+    if (store.displayMode === 'total') return formatRaw(val)
 
     if (store.displayMode === 'perGame') {
       const apps = player.appearances || 1
@@ -135,7 +139,7 @@ export default function ExplorerPage() {
       return (val / (mins / 90)).toFixed(2)
     }
 
-    return val.toString()
+    return formatRaw(val)
   }
 
   const [columns, setColumns] = useState(DEFAULT_COLUMNS)
@@ -211,9 +215,7 @@ export default function ExplorerPage() {
             onChange={(e) => store.setFilter('position', e.target.value)}
           >
             <option value="">All Positions</option>
-            {Array.from(new Set([...filterOpts.positions.general, ...filterOpts.positions.specific]))
-              .filter(p => p !== 'G')
-              .map((p) => (
+            {filterOpts.positions.specific.map((p) => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
