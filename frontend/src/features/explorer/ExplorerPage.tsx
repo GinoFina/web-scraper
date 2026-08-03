@@ -123,7 +123,7 @@ export default function ExplorerPage() {
 
   const formatStat = (val: number | undefined, player: any) => {
     if (val == null) return '—'
-    
+
     // Helper to format any raw value cleanly
     const formatRaw = (v: number) => Number.isInteger(v) ? v.toString() : Number(v.toFixed(2)).toString()
 
@@ -198,19 +198,19 @@ export default function ExplorerPage() {
 
       {/* Filters */}
       <div className="glass-card p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="flex flex-wrap gap-3 items-center">
           {/* Search */}
           <input
             type="text"
             placeholder="Search name..."
-            className="input-dark"
+            className="input-dark w-48"
             value={store.name}
             onChange={(e) => store.setFilter('name', e.target.value)}
           />
 
           {/* Position */}
           <select
-            className="input-dark"
+            className="input-dark w-30"
             value={store.position}
             onChange={(e) => store.setFilter('position', e.target.value)}
           >
@@ -222,7 +222,7 @@ export default function ExplorerPage() {
 
           {/* League */}
           <select
-            className="input-dark"
+            className="input-dark w-30"
             value={store.league}
             onChange={(e) => store.setFilter('league', e.target.value)}
           >
@@ -234,7 +234,7 @@ export default function ExplorerPage() {
 
           {/* Season */}
           <select
-            className="input-dark"
+            className="input-dark w-30"
             value={store.season}
             onChange={(e) => store.setFilter('season', e.target.value)}
           >
@@ -246,7 +246,7 @@ export default function ExplorerPage() {
 
           {/* Nationality */}
           <select
-            className="input-dark"
+            className="input-dark w-36"
             value={store.nationality}
             onChange={(e) => store.setFilter('nationality', e.target.value)}
           >
@@ -269,7 +269,7 @@ export default function ExplorerPage() {
           </select>
 
           {/* Age range */}
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center w-38">
             <input
               type="number"
               placeholder="Min Age"
@@ -288,7 +288,7 @@ export default function ExplorerPage() {
           </div>
 
           {/* Minutes range */}
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center w-46">
             <input
               type="number"
               placeholder="Min Played"

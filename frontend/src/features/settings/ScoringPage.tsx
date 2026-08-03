@@ -36,7 +36,7 @@ export const ScoringPage: React.FC = () => {
   const { rolesConfig, leagueMultipliers, isLoading, isSaving, fetchConfig, updateConfig, updateMultipliers, recalculateAll } = useConfigStore();
   const [localConfig, setLocalConfig] = useState<RolesConfigMap | null>(null);
   const [localMultipliers, setLocalMultipliers] = useState<Record<string, number> | null>(null);
-  const [activeTab, setActiveTab] = useState<'roles' | 'multipliers'>('roles');
+  const [localLeagueList, setLocalLeagueList] = useState<any[]>([]);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [newPosInput, setNewPosInput] = useState("");
   const [newMetricSelect, setNewMetricSelect] = useState("");
@@ -66,14 +66,16 @@ export const ScoringPage: React.FC = () => {
       const initial: Record<string, number> = {};
       leagueMultipliers.forEach(m => initial[m.id.toString()] = m.multiplier);
       setLocalMultipliers(initial);
+      setLocalLeagueList(leagueMultipliers);
     }
   }, [leagueMultipliers, localMultipliers]);
 
   const handleSave = async () => {
     try {
-      if (activeTab === 'roles' && localConfig) {
+      if (localConfig) {
         await updateConfig(localConfig);
-      } else if (activeTab === 'multipliers' && localMultipliers) {
+      }
+      if (localMultipliers) {
         await updateMultipliers(localMultipliers);
       }
       setToast({ msg: 'Configuración guardada exitosamente', type: 'success' });
@@ -218,6 +220,34 @@ export const ScoringPage: React.FC = () => {
     }
   };
 
+  const addNewLeague = () => {
+    const idStr = window.prompt("Enter new SofaScore Tournament ID:");
+    if (!idStr) return;
+    const id = parseInt(idStr);
+    if (isNaN(id)) {
+      setToast({ msg: 'Invalid ID', type: 'error' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+
+    if (localLeagueList.find(l => l.id === id)) {
+      setToast({ msg: 'League ID already exists', type: 'error' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+
+    const name = window.prompt("Enter League Name:") || `Custom League ${id}`;
+
+    setLocalLeagueList(prev => [...prev, { id, name, multiplier: 0.5 }]);
+    setLocalMultipliers(prev => prev ? { ...prev, [id]: 0.5 } : { [id]: 0.5 });
+  };
+
+  const sortedLeagues = [...localLeagueList].sort((a, b) => {
+    const valA = localMultipliers?.[a.id.toString()] ?? a.multiplier;
+    const valB = localMultipliers?.[b.id.toString()] ?? b.multiplier;
+    return valB - valA;
+  });
+
   return (
     <div className="min-h-full flex flex-col gap-5 animate-fade-in overflow-hidden" style={{ paddingLeft: '14px', paddingRight: '14px', paddingBottom: '10px' }}>
       {/* Header */}
@@ -229,26 +259,6 @@ export const ScoringPage: React.FC = () => {
           <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
             Modify weights, valid positions, and league multipliers.
           </p>
-        </div>
-        
-        {/* Tabs */}
-        <div className="flex bg-surface-800 p-1 rounded-lg border border-surface-700 mx-auto">
-          <button
-            onClick={() => setActiveTab('roles')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-              activeTab === 'roles' ? 'bg-surface-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Roles Config
-          </button>
-          <button
-            onClick={() => setActiveTab('multipliers')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-              activeTab === 'multipliers' ? 'bg-surface-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            League Multipliers
-          </button>
         </div>
         <div className="flex gap-2">
           <button
@@ -281,39 +291,10 @@ export const ScoringPage: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex gap-5 min-h-0">
-        
-        {activeTab === 'multipliers' ? (
-          <div className="flex-1 glass-card overflow-y-auto p-6">
-            <h2 className="text-lg font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>League Multipliers</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {leagueMultipliers.map(league => (
-                <div key={league.id} className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'var(--color-surface-800)', border: '1px solid var(--color-border)' }}>
-                  <div className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                    {league.name}
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max="2"
-                    step="0.0001"
-                    value={localMultipliers?.[league.id.toString()] ?? league.multiplier}
-                    onChange={e => {
-                      const val = parseFloat(e.target.value);
-                      if (!isNaN(val)) {
-                        setLocalMultipliers(prev => prev ? { ...prev, [league.id.toString()]: val } : null);
-                      }
-                    }}
-                    className="input-dark w-24 text-center"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <>
+      <div className="flex-1 flex gap-5 min-h-0 items-start">
+
         {/* Roles Sidebar */}
-        <div className="w-64 flex flex-col glass-card overflow-hidden">
+        <div className="w-64 flex flex-col glass-card overflow-hidden max-h-full">
           <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)', backgroundColor: 'rgba(15, 21, 32, 0.4)', paddingLeft: '4px', paddingRight: '4px' }}>
             <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Available Roles</h2>
           </div>
@@ -353,7 +334,7 @@ export const ScoringPage: React.FC = () => {
 
         {/* Editor Panel */}
         {roleData && selectedRole && (
-          <div className="flex-1 flex flex-col glass-card overflow-hidden">
+          <div className="flex-1 flex flex-col glass-card overflow-hidden max-h-full">
             <div className="p-5 border-b flex items-center gap-3" style={{ borderColor: 'var(--color-border)', backgroundColor: 'rgba(15, 21, 32, 0.4)', paddingLeft: '10px', paddingRight: '10px' }}>
               {isEditingName ? (
                 <div className="flex gap-2 items-center">
@@ -385,7 +366,7 @@ export const ScoringPage: React.FC = () => {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-8" style={{ paddingLeft: '10px', paddingRight: '10px' }}>
+            <div className="flex-1 overflow-y-auto p-6 space-y-8" style={{ paddingLeft: '10px', paddingRight: '10px', paddingBottom: '10px' }}>
 
               {/* Posiciones Válidas & Añadir Métrica */}
               <div className="flex gap-4 items-start">
@@ -504,8 +485,45 @@ export const ScoringPage: React.FC = () => {
             </div>
           </div>
         )}
-        </>
-        )}
+
+        {/* League Multipliers Sidebar */}
+        <div className="w-80 flex flex-col glass-card overflow-hidden max-h-full">
+          <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border)', backgroundColor: 'rgba(15, 21, 32, 0.4)', paddingLeft: '14px', paddingRight: '14px' }}>
+            <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>League Multipliers</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1" style={{ paddingLeft: '14px', paddingRight: '14px' }}>
+            {sortedLeagues.map(league => (
+              <div key={league.id} className="flex items-center justify-between p-2 rounded-lg" style={{ backgroundColor: 'var(--color-surface-800)', border: '1px solid var(--color-border)' }}>
+                <div className="text-sm font-medium truncate w-32" style={{ color: 'var(--color-text-secondary)' }} title={league.name}>
+                  {league.name}
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  max="2"
+                  step="0.0001"
+                  value={localMultipliers?.[league.id.toString()] ?? league.multiplier}
+                  onChange={e => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val)) {
+                      setLocalMultipliers(prev => prev ? { ...prev, [league.id.toString()]: val } : null);
+                    }
+                  }}
+                  className="input-dark w-24 text-center text-xs py-1"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="p-3 border-t" style={{ borderColor: 'var(--color-border)', backgroundColor: 'rgba(15, 21, 32, 0.4)', paddingLeft: '0px', paddingRight: '0px' }}>
+            <button
+              onClick={addNewLeague}
+              className="w-full btn-ghost text-xs py-2 flex items-center justify-center gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add League
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,9 @@
 Scraper configuration — constants and mappings extracted from sofascore_collector.py.
 """
 
+import json
+from pathlib import Path
+
 API_BASE = "https://api.sofascore.com/api/v1"
 IMPERSONATE = "chrome124"
 
@@ -39,9 +42,6 @@ TOURNAMENT_NAMES: dict[int, str] = {
     11653: "Chile 1", 16736: "Bolivia 1", 17073: "Spain 3",
 }
 
-import json
-from pathlib import Path
-
 def get_league_multipliers() -> dict[int, float]:
     path = Path(__file__).parent.parent / "core" / "league_multipliers.json"
     try:
@@ -51,6 +51,7 @@ def get_league_multipliers() -> dict[int, float]:
     except Exception:
         # Fallback if file doesn't exist
         return {}
+
 # Fields requested from the league statistics endpoint
 LEAGUE_STAT_FIELDS = ",".join([
     "appearances", "minutesPlayed", "goals", "assists", "rating",
