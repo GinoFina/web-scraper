@@ -11,13 +11,15 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
   useEffect(() => {
     if (playerId) {
       getPlayerCard(playerId).then(res => {
-        if (res) setP1Info(res)
+        if (res && !res.error) setP1Info(res)
       })
-      const metricList = config?.metrics?.join(',') || ''
+      const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
         playerId, metricList, config?.playerLeague, config?.playerSeason, 
         config?.displayMode, config?.comparisonPosition,
-        config?.ageMin, config?.ageMax, config?.minutesMin, config?.minutesMax
+        config?.ageMin, config?.ageMax, config?.minutesMin, config?.minutesMax,
+        config?.comparisonLeagues === 'Total' ? undefined : config?.comparisonLeagues,
+        config?.comparisonSeasons === 'Total' ? undefined : config?.comparisonSeasons
       ).then(setP1Data).catch(() => {})
     }
   }, [playerId, config])
@@ -25,13 +27,15 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
   useEffect(() => {
     if (config?.player2Id) {
       getPlayerCard(config.player2Id).then(res => {
-        if (res) setP2Info(res)
+        if (res && !res.error) setP2Info(res)
       })
-      const metricList = config?.metrics?.join(',') || ''
+      const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
         config.player2Id, metricList, config?.player2League || 'Total', config?.player2Season || 'Total', 
         config?.displayMode, config?.comparisonPosition,
-        config?.ageMin, config?.ageMax, config?.minutesMin, config?.minutesMax
+        config?.ageMin, config?.ageMax, config?.minutesMin, config?.minutesMax,
+        config?.comparisonLeagues === 'Total' ? undefined : config?.comparisonLeagues,
+        config?.comparisonSeasons === 'Total' ? undefined : config?.comparisonSeasons
       ).then(setP2Data).catch(() => {})
     }
   }, [config?.player2Id, config])
@@ -148,7 +152,7 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
                 <div className="flex-1 flex items-center justify-end gap-2">
                   {/* Outside label: Raw absolute value */}
                   <span className="text-[10px] font-bold text-[var(--color-text-primary)] w-8 text-right">
-                    {Number.isInteger(m.p1Raw) ? m.p1Raw : m.p1Raw.toFixed(2)}
+                    {Number.isInteger(m.p1Raw) ? m.p1Raw : m.p1Raw?.toFixed(2) ?? '0'}
                   </span>
                   
                   <div className="h-[14px] bg-[var(--color-surface-900)] relative flex justify-end w-full rounded-l border border-r-0 border-[var(--color-surface-700)] overflow-hidden">
@@ -189,7 +193,7 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
                   
                   {/* Outside label: Raw absolute value */}
                   <span className="text-[10px] font-bold text-[var(--color-text-primary)] w-8 text-left">
-                    {Number.isInteger(m.p2Raw) ? m.p2Raw : m.p2Raw.toFixed(2)}
+                    {Number.isInteger(m.p2Raw) ? m.p2Raw : m.p2Raw?.toFixed(2) ?? '0'}
                   </span>
                 </div>
               </div>

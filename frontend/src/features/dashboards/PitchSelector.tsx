@@ -1,22 +1,22 @@
 interface Props {
-  selected: string
-  onSelect: (position: string) => void
+  selected: string[]
+  onSelect: (position: string[]) => void
 }
 
 const positions = [
-  { id: 'F', label: 'CF', x: 20, y: 50 },
-  { id: 'F', label: 'LW', x: 30, y: 18 },
-  { id: 'F', label: 'RW', x: 30, y: 82 },
-  { id: 'M', label: 'AMF', x: 40, y: 50 },
-  { id: 'M', label: 'CMF', x: 60, y: 50 },
-  { id: 'M', label: 'DMF', x: 80, y: 50 },
-  { id: 'M', label: 'LM', x: 60, y: 15 },
-  { id: 'M', label: 'RM', x: 60, y: 85 },
-  { id: 'D', label: 'LB', x: 95, y: 15 },
-  { id: 'D', label: 'CB', x: 102, y: 38 },
-  { id: 'D', label: 'CB', x: 102, y: 62 },
-  { id: 'D', label: 'RB', x: 95, y: 85 },
-  { id: 'G', label: 'GK', x: 123, y: 50 },
+  { id: 'ST', label: 'ST', x: 20, y: 50 },
+  { id: 'LW', label: 'LW', x: 30, y: 18 },
+  { id: 'RW', label: 'RW', x: 30, y: 82 },
+  { id: 'AM', label: 'AM', x: 40, y: 50 },
+  { id: 'MC', label: 'MC', x: 60, y: 50 },
+  { id: 'DM', label: 'DM', x: 80, y: 50 },
+  { id: 'ML', label: 'ML', x: 60, y: 15 },
+  { id: 'MR', label: 'MR', x: 60, y: 85 },
+  { id: 'DL', label: 'DL', x: 95, y: 15 },
+  { id: 'DC', label: 'DC', x: 102, y: 38 },
+  { id: 'DC', label: 'DC', x: 102, y: 62 },
+  { id: 'DR', label: 'DR', x: 95, y: 85 },
+  { id: 'GK', label: 'GK', x: 123, y: 50 },
 ]
 
 export default function PitchSelector({ selected, onSelect }: Props) {
@@ -48,11 +48,16 @@ export default function PitchSelector({ selected, onSelect }: Props) {
 
       {/* Position dots */}
       {positions.map((pos, i) => {
-        const isSelected = selected === pos.id || selected === pos.label
+        const isSelected = selected.includes(pos.id) || selected.includes(pos.label)
         return (
           <button
             key={`${pos.label}-${i}`}
-            onClick={() => onSelect(isSelected ? '' : pos.id)}
+            onClick={() => {
+              const next = isSelected 
+                ? selected.filter(x => x !== pos.id && x !== pos.label)
+                : [...selected, pos.id]
+              onSelect(next)
+            }}
             className="absolute flex flex-col items-center gap-0.5 transition-all duration-200"
             style={{
               left: `${(pos.x / 130) * 100}%`,

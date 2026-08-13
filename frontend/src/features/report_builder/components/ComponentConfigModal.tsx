@@ -144,7 +144,7 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
     } else if (item.type === 'HeadToHead') {
       if (!player2Id) return alert('Please select a second player for the comparison')
       if (selectedRadar.length === 0) return alert('Please select at least one metric')
-      onSave({ ...baseConfig, metrics: selectedRadar, player2Id, player2League, player2Season })
+      onSave({ ...baseConfig, metrics: selectedRadar, comparisonPosition, player2Id, player2League, player2Season })
     } else if (item.type === 'StatsTable') {
       if (selectedStats.length === 0) return alert('Please select at least 1 statistic')
       onSave({ ...baseConfig, metrics: selectedStats, columns })
@@ -235,7 +235,7 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
               </div>
             )}
 
-            {item.type !== 'StatsTable' && item.type !== 'HeadToHead' && (
+            {item.type !== 'StatsTable' && (
               <>
                 <div style={{ padding: '5px 5px 5px 5px' }} className="border border-[var(--color-border)] rounded-lg bg-[var(--color-surface-900)] mt-3">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Filtros Generales</h4>

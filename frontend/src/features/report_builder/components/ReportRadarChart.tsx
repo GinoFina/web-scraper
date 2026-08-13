@@ -8,7 +8,7 @@ export default function ReportRadarChart({ playerId, config }: { playerId: numbe
 
   useEffect(() => {
     if (playerId) {
-      const metricList = config?.metrics?.join(',') || ''
+      const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
         playerId, 
         metricList, 
@@ -28,7 +28,7 @@ export default function ReportRadarChart({ playerId, config }: { playerId: numbe
 
   useEffect(() => {
     if (config?.player2Id) {
-      const metricList = config?.metrics?.join(',') || ''
+      const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
         config.player2Id, 
         metricList, 

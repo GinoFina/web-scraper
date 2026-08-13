@@ -27,6 +27,7 @@ def get_players(
     minutes_max: int | None = None,
     sort_by: str = "name",
     sort_dir: str = "asc",
+    role: str | None = None,
 ):
     """Paginated player list with filtering and sorting."""
     conn = get_connection()
@@ -47,6 +48,7 @@ def get_players(
         minutes_max=minutes_max,
         sort_by=sort_by,
         sort_dir=sort_dir,
+        role=role,
     )
 
 

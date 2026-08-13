@@ -28,6 +28,11 @@ export default function ReportPlayerCard({ playerId }: { playerId: number }) {
         <h2 className="text-xl font-bold flex items-center gap-2 text-[var(--color-text-primary)]">
           {p.name}
           {data.images.flag && <img src={getProxyImageUrl(data.images.flag)} alt="flag" className="w-6 h-auto" crossOrigin="anonymous" />}
+          {data.stats?.[0]?.role && (
+            <span className="text-sm font-normal text-[var(--color-text-secondary)] ml-2">
+              {data.stats[0].role.replace(/_/g, ' ')}
+            </span>
+          )}
         </h2>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-sm text-[var(--color-text-secondary)]">
           <div><strong className="text-[var(--color-text-primary)]">Age:</strong> {p.age || '—'}</div>

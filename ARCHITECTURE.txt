@@ -36,10 +36,12 @@ project_root/
 │   │   ├── analytics.py            # GET /api/analytics/scatter, /radar/{id}
 │   │   ├── sync.py                 # POST /api/sync/league, /update-all, WS
 │   │   ├── reports.py              # GET /api/reports/player-card/{id}, /heatmap, /proxy
-│   │   └── filters.py              # GET /api/filters/* (dropdowns)
+│   │   ├── filters.py              # GET /api/filters/* (dropdowns)
+│   │   └── config.py               # GET/PUT /api/config/roles, /multipliers
 │   ├── core/                       # Business logic & math
 │   │   ├── analytics.py            # Pandas: percentiles, averages, scatter/radar data
-│   │   └── roles.json              # Role weight definitions for scoring
+│   │   ├── roles_config.json       # Dynamic Role weight definitions for scoring
+│   │   └── league_multipliers.json # Dynamic multipliers for leagues
 │   ├── scraper/                    # Sofascore data extraction
 │   │   ├── client.py               # curl_cffi wrapper with impersonation
 │   │   ├── collector.py            # Pipeline: league → enrich → recalculate → evaluate
@@ -65,7 +67,8 @@ project_root/
 │       │   ├── explorer/           # Data table + filters + pagination
 │       │   ├── dashboards/         # Scatter + radar + controls + Pitch Selector
 │       │   ├── report_builder/     # Heatmaps + detailed reports
-│       │   └── sync/               # League management + WS terminal
+│       │   ├── sync/               # League management + WS terminal
+│       │   └── settings/           # Scoring config (roles, weights, multipliers)
 │       ├── services/               # Axios + WebSocket API client
 │       └── store/                  # Zustand state slices
 │

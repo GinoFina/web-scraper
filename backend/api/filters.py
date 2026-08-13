@@ -60,4 +60,4 @@ def list_metrics():
 
 @router.get("/roles")
 def list_roles():
-    return get_roles()
+    return list(get_roles().keys())

@@ -78,6 +78,7 @@ def get_players_paginated(
     minutes_max: int | None = None,
     sort_by: str = "name",
     sort_dir: str = "asc",
+    role: str | None = None,
 ) -> dict:
     """Return paginated players with their stats, applying all filters."""
     conditions = []
@@ -90,17 +91,28 @@ def get_players_paginated(
         conditions.append("p.position = ?")
         params.append(position)
     if specific_position:
-        conditions.append("p.specific_position LIKE ?")
-        params.append(f"%{specific_position}%")
+        sp_list = [sp.strip() for sp in specific_position.split(",") if sp.strip()]
+        if sp_list:
+            sp_conditions = []
+            for sp in sp_list:
+                sp_conditions.append("p.specific_position LIKE ?")
+                params.append(f"%{sp}%")
+            conditions.append(f"({' OR '.join(sp_conditions)})")
     if nationality:
-        conditions.append("p.nationality = ?")
-        params.append(nationality)
+        nat_list = [n.strip() for n in nationality.split(",") if n.strip()]
+        if nat_list:
+            nat_placeholders = ",".join(["?"] * len(nat_list))
+            conditions.append(f"p.nationality IN ({nat_placeholders})")
+            params.extend(nat_list)
     if team:
         conditions.append("p.team = ?")
         params.append(team)
     if league:
-        conditions.append("s.tournament_name = ?")
-        params.append(league)
+        league_list = [l.strip() for l in league.split(",") if l.strip()]
+        if league_list:
+            league_placeholders = ",".join(["?"] * len(league_list))
+            conditions.append(f"s.tournament_name IN ({league_placeholders})")
+            params.extend(league_list)
     if season:
         conditions.append("s.season_name = ?")
         params.append(season)
@@ -116,6 +128,9 @@ def get_players_paginated(
     if minutes_max is not None:
         conditions.append("s.minutes_played <= ?")
         params.append(minutes_max)
+    if role:
+        conditions.append("e.role = ?")
+        params.append(role)
 
     where = " AND ".join(conditions) if conditions else "1=1"
 
@@ -162,7 +177,7 @@ def get_players_paginated(
                 p.country_alpha2, p.position, p.specific_position,
                 e.role, e.role_score, e.league_score, e.world_score,
                 s.*,
-                ROW_NUMBER() OVER (PARTITION BY p.player_id ORDER BY s.season_year DESC, s.fetched_at DESC) as rn
+                ROW_NUMBER() OVER (PARTITION BY p.player_id ORDER BY s.season_year DESC, s.fetched_at DESC, e.world_score DESC) as rn
             FROM players p
             LEFT JOIN season_stats s ON s.player_id = p.player_id
             LEFT JOIN player_evaluations e ON e.stats_id = s.id
@@ -194,9 +209,13 @@ def get_player_detail(conn: sqlite3.Connection, player_id: int) -> dict | None:
         return None
 
     stats = conn.execute(
-        """SELECT s.*, e.role, e.role_score, e.league_score, e.world_score
+        """WITH RankedEvals AS (
+               SELECT *, ROW_NUMBER() OVER(PARTITION BY stats_id ORDER BY world_score DESC) as rn
+               FROM player_evaluations
+           )
+           SELECT s.*, e.role, e.role_score, e.league_score, e.world_score
            FROM season_stats s
-           LEFT JOIN player_evaluations e ON e.stats_id = s.id
+           LEFT JOIN RankedEvals e ON e.stats_id = s.id AND e.rn = 1
            WHERE s.player_id = ?
            ORDER BY s.fetched_at DESC""",
         (player_id,),

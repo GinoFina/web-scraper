@@ -3,7 +3,7 @@ import { create } from 'zustand'
 interface DashboardState {
   metricX: string
   metricY: string
-  position: string
+  position: string[]
   topN: number
   ageMin: number | undefined
   ageMax: number | undefined
@@ -17,7 +17,7 @@ interface DashboardState {
 
   setMetricX: (v: string) => void
   setMetricY: (v: string) => void
-  setPosition: (v: string) => void
+  setPosition: (v: string[]) => void
   setTopN: (v: number) => void
   setFilter: (key: string, value: unknown) => void
   togglePlayer: (id: number) => void
@@ -30,7 +30,7 @@ interface DashboardState {
 export const useDashboardStore = create<DashboardState>((set) => ({
   metricX: 'goals',
   metricY: 'assists',
-  position: '',
+  position: [],
   topN: 50,
   ageMin: undefined,
   ageMax: undefined,
@@ -59,7 +59,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   resetFilters: () => set({
     metricX: 'goals',
     metricY: 'assists',
-    position: '',
+    position: [],
     topN: 50,
     ageMin: undefined,
     ageMax: undefined,

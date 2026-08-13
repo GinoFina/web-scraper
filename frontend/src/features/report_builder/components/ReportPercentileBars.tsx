@@ -6,7 +6,7 @@ export default function ReportPercentileBars({ playerId, config }: { playerId: n
 
   useEffect(() => {
     if (playerId) {
-      const metricList = config?.metrics?.join(',') || ''
+      const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
         playerId, 
         metricList, 

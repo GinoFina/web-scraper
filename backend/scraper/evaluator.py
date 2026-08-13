@@ -118,10 +118,6 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
             if not pos:
                 pos = p["position"] or ""
             
-            best_role = None
-            best_role_score = -1.0
-            best_league_score = -1.0
-            
             # Expand generic positions to specific roles
             expanded_pos = pos.upper()
             pos_parts = expanded_pos.replace(" ", "").split("/")
@@ -170,27 +166,20 @@ def evaluate_all_players(conn: sqlite3.Connection, log: Callable[[str, str], Non
                 role_score_final = min(100.0, max(0.0, world_score * 100))
                 league_score_final = min(100.0, max(0.0, league_score * 100))
                 
-                if role_score_final > best_role_score:
-                    best_role_score = role_score_final
-                    best_league_score = league_score_final
-                    best_role = role_name
-            
-            # Save only the best role
-            if best_role:
                 # Apply multiplier for world score (default to a low multiplier like 0.5 if league is unknown)
                 if int(t_id) == 0:
                     multiplier = player_multipliers.get(p["player_id"], 0.5)
                 else:
                     multiplier = LEAGUE_MULTIPLIERS.get(int(t_id), 0.5)
                 
-                final_world_score = best_role_score * multiplier
+                final_world_score = league_score_final * multiplier
                 
                 repo.upsert_evaluation(
                     conn, 
                     stats_id=stats_id,
-                    role=best_role,
-                    role_score=best_role_score,
-                    league_score=best_league_score,
+                    role=role_name,
+                    role_score=role_score_final,
+                    league_score=league_score_final,
                     world_score=final_world_score
                 )
                 evaluated_count += 1

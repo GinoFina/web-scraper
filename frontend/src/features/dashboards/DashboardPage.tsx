@@ -13,6 +13,19 @@ export default function DashboardPage() {
   const [radarData, setRadarData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [isLeagueOpen, setIsLeagueOpen] = useState(false)
+  const [isPositionOpen, setIsPositionOpen] = useState(false)
+  const [localTopN, setLocalTopN] = useState(store.topN)
+
+  useEffect(() => {
+    setLocalTopN(store.topN)
+  }, [store.topN])
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      store.setTopN(localTopN)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [localTopN, store])
 
   useEffect(() => {
     Promise.all([getMetrics(), getPositions(), getLeagues()])
@@ -26,7 +39,7 @@ export default function DashboardPage() {
       const filters: any = {
         metric_x: store.metricX,
         metric_y: store.metricY,
-        position: store.position || undefined,
+        position: store.position?.length > 0 ? store.position.join(',') : undefined,
         top_n: store.topN,
         comparison_league: store.leagues?.length > 0 ? store.leagues.join(',') : undefined,
         team: store.team || undefined,
@@ -282,10 +295,49 @@ export default function DashboardPage() {
           <select className="input-dark w-full sm:w-auto flex-1 min-w-[140px] max-w-[200px]" value={store.metricY} onChange={(e) => store.setMetricY(e.target.value)}>
             {metrics.map((m) => <option key={m.key} value={m.key}>{m.label}{store.metricY === m.key ? ' (Y)' : ''}</option>)}
           </select>
-          <select className="input-dark w-full sm:w-auto flex-1 min-w-[120px] max-w-[20px]" value={store.position} onChange={(e) => store.setPosition(e.target.value)}>
-            <option value="">All Positions</option>
-            {positions.specific.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <div className="relative w-full sm:w-auto flex-1 min-w-[120px] max-w-[20px]">
+            <button
+              className="input-dark w-full text-left flex justify-between items-center"
+              style={{ height: '35px', padding: '8px 12px' }}
+              onClick={() => setIsPositionOpen(!isPositionOpen)}
+            >
+              <span className="truncate">
+                {store.position?.length > 0 ? `${store.position.length} Selected` : 'All Positions'}
+              </span>
+              <span className="text-[10px] ml-2">▼</span>
+            </button>
+            {isPositionOpen && (
+              <>
+                <div className="fixed inset-0 z-[60]" onClick={() => setIsPositionOpen(false)}></div>
+                <div className="absolute top-full left-0 mt-1 w-full bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-2xl z-[70] py-1 max-h-60 overflow-y-auto">
+                  {positions.specific
+                    .filter(p => !['G'].includes(p))
+                    .map((p) => {
+                      const isSelected = (store.position || []).includes(p)
+                      return (
+                        <label
+                          key={p}
+                          className="flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-[#2563eb] hover:text-white transition-none group"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              const current = store.position || []
+                              store.setPosition(current.includes(p) ? current.filter(x => x !== p) : [...current, p])
+                            }}
+                            className="rounded border-[var(--color-border)] bg-[var(--color-surface-900)] text-[#2563eb] focus:ring-[#2563eb]"
+                          />
+                          <span className="text-[13px] truncate text-[var(--color-text-primary)] group-hover:text-white">
+                            {p}
+                          </span>
+                        </label>
+                      )
+                    })}
+                </div>
+              </>
+            )}
+          </div>
           <div className="relative w-full sm:w-auto flex-1 min-w-[120px] max-w-[20px]">
             <button
               className="input-dark w-full text-left flex justify-between items-center"
@@ -333,16 +385,16 @@ export default function DashboardPage() {
               type="range"
               min={10}
               max={200}
-              value={store.topN}
-              onChange={(e) => store.setTopN(+e.target.value)}
+              value={localTopN}
+              onChange={(e) => setLocalTopN(+e.target.value)}
               className="flex-1 min-w-0 cursor-pointer accent-[#6366f1]"
             />
             <input
               type="number"
               min={1}
               max={2000}
-              value={store.topN}
-              onChange={(e) => store.setTopN(Math.max(1, parseInt(e.target.value) || 1))}
+              value={localTopN}
+              onChange={(e) => setLocalTopN(Math.max(1, parseInt(e.target.value) || 1))}
               className="input-dark text-xs text-center py-1 px-1.5 w-14 shrink-0"
               style={{ border: '1px solid var(--color-border)' }}
             />

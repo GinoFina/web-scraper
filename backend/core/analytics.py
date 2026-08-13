@@ -235,11 +235,17 @@ def get_scatter_data(
 
     # Apply position filter
     if position:
-        mask = (
-            comp_df["position"].str.contains(position, case=False, na=False) |
-            comp_df["specific_position"].str.contains(position, case=False, na=False)
-        )
-        comp_df = comp_df[mask]
+        pos_list = [p.strip() for p in position.split(",") if p.strip()]
+        if pos_list:
+            masks = []
+            for p in pos_list:
+                m = (
+                    comp_df["position"].str.contains(p, case=False, na=False) |
+                    comp_df["specific_position"].str.contains(p, case=False, na=False)
+                )
+                masks.append(m)
+            final_mask = pd.concat(masks, axis=1).any(axis=1)
+            comp_df = comp_df[final_mask]
 
     # Apply additional filters
     if filters:
@@ -252,11 +258,13 @@ def get_scatter_data(
         if filters.get("minutes_max"):
             comp_df = comp_df[comp_df["minutes_played"] <= filters["minutes_max"]]
         if filters.get("comparison_league"):
-            leagues = filters["comparison_league"].split(",")
-            comp_df = comp_df[comp_df["tournament_name"].isin(leagues)]
+            leagues = [l.strip() for l in filters["comparison_league"].split(",")]
+            if "Total" not in leagues and "total" not in [l.lower() for l in leagues]:
+                comp_df = comp_df[comp_df["tournament_name"].isin(leagues)]
         if filters.get("comparison_season"):
-            seasons = filters["comparison_season"].split(",")
-            comp_df = comp_df[comp_df["season_name"].isin(seasons)]
+            seasons = [s.strip() for s in filters["comparison_season"].split(",")]
+            if "Total" not in seasons and "total" not in [s.lower() for s in seasons]:
+                comp_df = comp_df[comp_df["season_name"].isin(seasons)]
         if filters.get("team"):
             comp_df = comp_df[comp_df["team"] == filters["team"]]
 
@@ -361,11 +369,13 @@ def get_radar_data(
 
     if filters:
         if filters.get("comparison_league"):
-            comp_league_list = filters["comparison_league"].split(",")
-            comp_df = comp_df[comp_df["tournament_name"].isin(comp_league_list)]
+            comp_league_list = [l.strip() for l in filters["comparison_league"].split(",")]
+            if "Total" not in comp_league_list and "total" not in [l.lower() for l in comp_league_list]:
+                comp_df = comp_df[comp_df["tournament_name"].isin(comp_league_list)]
         if filters.get("comparison_season"):
-            comp_season_list = filters["comparison_season"].split(",")
-            comp_df = comp_df[comp_df["season_name"].isin(comp_season_list)]
+            comp_season_list = [s.strip() for s in filters["comparison_season"].split(",")]
+            if "Total" not in comp_season_list and "total" not in [s.lower() for s in comp_season_list]:
+                comp_df = comp_df[comp_df["season_name"].isin(comp_season_list)]
         
     comp_df = aggregate_player_stats(comp_df)
     if display_mode:

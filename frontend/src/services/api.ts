@@ -24,6 +24,7 @@ export interface PlayerFilters {
   minutes_max?: number
   sort_by?: string
   sort_dir?: string
+  role?: string
 }
 
 export async function getPlayers(filters: PlayerFilters = {}) {
@@ -59,6 +60,11 @@ export async function getNationalities() {
 
 export async function getTeams() {
   const { data } = await api.get('/api/filters/teams')
+  return data
+}
+
+export async function getRoles() {
+  const { data } = await api.get('/api/filters/roles')
   return data
 }
 
@@ -151,7 +157,6 @@ export function getProxyImageUrl(originalUrl: string): string {
 export function createSyncWs(onMessage: (data: { level: string; message: string }) => void): WebSocket {
   const ws = new WebSocket('ws://localhost:8000/api/sync/ws/sync-logs')
   ws.onmessage = (event) => {
-    console.log('[WS MESSAGE]', event.data)
     try {
       const data = JSON.parse(event.data)
       onMessage(data)

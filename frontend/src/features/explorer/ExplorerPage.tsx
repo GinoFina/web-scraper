@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { getPlayers, getPositions, getLeagues, getNationalities, getTeams, getSeasons, getMetrics } from '../../services/api'
-import { usePlayerStore } from '../../store/playerStore'
+import { getPlayers, getPositions, getLeagues, getNationalities, getTeams, getSeasons, getMetrics, getRoles } from '../../services/api'
+import { usePlayerStore, DEFAULT_COLUMNS } from '../../store/playerStore'
 
 interface FilterOptions {
   positions: { general: string[]; specific: string[] }
@@ -8,25 +8,8 @@ interface FilterOptions {
   nationalities: string[]
   teams: string[]
   seasons: string[]
+  roles: string[]
 }
-
-const DEFAULT_COLUMNS = [
-  { key: 'name', label: 'Player' },
-  { key: 'age', label: 'Age' },
-  { key: 'nationality', label: 'Nationality' },
-  { key: 'minutes_played', label: 'Minutes' },
-  { key: 'specific_position', label: 'Position' },
-  { key: 'team', label: 'Club' },
-  { key: 'tournament_name', label: 'League' },
-  { key: 'season_name', label: 'Season' },
-  { key: 'goals', label: 'G' },
-  { key: 'assists', label: 'A' },
-  { key: 'rating', label: 'Rating' },
-  { key: 'role', label: 'Role' },
-  { key: 'role_score', label: 'Role Score' },
-  { key: 'league_score', label: 'League Score' },
-  { key: 'world_score', label: 'World Score' },
-]
 
 export default function ExplorerPage() {
   const store = usePlayerStore()
@@ -42,15 +25,19 @@ export default function ExplorerPage() {
     nationalities: [],
     teams: [],
     seasons: [],
+    roles: [],
   })
   const [availableMetrics, setAvailableMetrics] = useState<{ key: string, label: string, category: string }[]>([])
   const [loading, setLoading] = useState(false)
+  const [isSpecificPositionOpen, setIsSpecificPositionOpen] = useState(false)
+  const [isLeagueOpen, setIsLeagueOpen] = useState(false)
+  const [isNationalityOpen, setIsNationalityOpen] = useState(false)
 
   // Load filter options
   useEffect(() => {
-    Promise.all([getPositions(), getLeagues(), getNationalities(), getTeams(), getSeasons(), getMetrics()])
-      .then(([pos, leagues, nats, teams, seasons, metrics]) => {
-        setFilterOpts({ positions: pos, leagues, nationalities: nats, teams, seasons })
+    Promise.all([getPositions(), getLeagues(), getNationalities(), getTeams(), getSeasons(), getMetrics(), getRoles()])
+      .then(([pos, leagues, nats, teams, seasons, metrics, roles]) => {
+        setFilterOpts({ positions: pos, leagues, nationalities: nats, teams, seasons, roles })
         setAvailableMetrics(metrics || [])
       })
       .catch(() => { })
@@ -65,11 +52,12 @@ export default function ExplorerPage() {
         page_size: store.pageSize,
         name: store.name || undefined,
         position: store.position || undefined,
-        specific_position: store.specificPosition || undefined,
-        nationality: store.nationality || undefined,
+        specific_position: store.specificPosition?.length > 0 ? store.specificPosition.join(',') : undefined,
+        nationality: store.nationality?.length > 0 ? store.nationality.join(',') : undefined,
         team: store.team || undefined,
-        league: store.league || undefined,
+        league: store.league?.length > 0 ? store.league.join(',') : undefined,
         season: store.season || undefined,
+        role: store.role || undefined,
         sort_by: store.sortBy,
         sort_dir: store.sortDir,
       }
@@ -142,7 +130,8 @@ export default function ExplorerPage() {
     return formatRaw(val)
   }
 
-  const [columns, setColumns] = useState(DEFAULT_COLUMNS)
+  const columns = store.columns || DEFAULT_COLUMNS
+  const setColumns = (cols: any) => store.setFilter('columns', cols)
   const [draggedColIdx, setDraggedColIdx] = useState<number | null>(null)
 
   return (
@@ -197,44 +186,136 @@ export default function ExplorerPage() {
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-4">
+      <div className="glass-card p-4 relative z-50">
         <div className="flex flex-wrap gap-3 items-center">
           {/* Search */}
           <input
             type="text"
             placeholder="Search name..."
-            className="input-dark w-48"
+            className="input-dark w-64"
             value={store.name}
             onChange={(e) => store.setFilter('name', e.target.value)}
           />
 
-          {/* Position */}
+          {/* General Position */}
           <select
-            className="input-dark w-30"
+            className="input-dark w-40"
             value={store.position}
             onChange={(e) => store.setFilter('position', e.target.value)}
           >
-            <option value="">All Positions</option>
-            {filterOpts.positions.specific.map((p) => (
-              <option key={p} value={p}>{p}</option>
+            <option value="">All General</option>
+            {filterOpts.positions.general.map((p) => (
+              <option key={p} value={p}>
+                {p === 'G' ? 'Goalkeeper (G)' : p === 'D' ? 'Defender (D)' : p === 'M' ? 'Midfielder (M)' : p === 'F' ? 'Forward (F)' : p}
+              </option>
             ))}
           </select>
 
-          {/* League */}
+          {/* Role Filter */}
           <select
-            className="input-dark w-30"
-            value={store.league}
-            onChange={(e) => store.setFilter('league', e.target.value)}
+            className="input-dark w-48"
+            value={store.role}
+            onChange={(e) => store.setFilter('role', e.target.value)}
           >
-            <option value="">All Leagues</option>
-            {filterOpts.leagues.filter(l => l.toLowerCase() !== 'total').map((l) => (
-              <option key={l} value={l}>{l}</option>
+            <option value="">All Roles</option>
+            {filterOpts.roles?.map((r) => (
+              <option key={r} value={r}>
+                {r.replace(/_/g, ' ')}
+              </option>
             ))}
           </select>
+
+          {/* Specific Position */}
+          <div className="relative w-full sm:w-auto flex-1 min-w-[120px] max-w-[200px]">
+            <button
+              className="input-dark w-full text-left flex justify-between items-center"
+              style={{ height: '35px', padding: '8px 12px' }}
+              onClick={() => setIsSpecificPositionOpen(!isSpecificPositionOpen)}
+            >
+              <span className="truncate">
+                {store.specificPosition?.length > 0 ? `${store.specificPosition.length} Selected` : 'All Positions'}
+              </span>
+              <span className="text-[10px] ml-2">▼</span>
+            </button>
+            {isSpecificPositionOpen && (
+              <>
+                <div className="fixed inset-0 z-[60]" onClick={() => setIsSpecificPositionOpen(false)}></div>
+                <div className="absolute top-full left-0 mt-1 w-full bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-2xl z-[70] py-1 max-h-60 overflow-y-auto">
+                  {filterOpts.positions.specific
+                    .filter(p => !['G', 'D', 'M', 'F'].includes(p))
+                    .map((p) => {
+                      const isSelected = (store.specificPosition || []).includes(p)
+                      return (
+                        <label
+                          key={p}
+                          className="flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-[#2563eb] hover:text-white transition-none group"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              const current = store.specificPosition || []
+                              store.setFilter('specificPosition', current.includes(p) ? current.filter(x => x !== p) : [...current, p])
+                            }}
+                            className="rounded border-[var(--color-border)] bg-[var(--color-surface-900)] text-[#2563eb] focus:ring-[#2563eb]"
+                          />
+                          <span className="text-[13px] truncate text-[var(--color-text-primary)] group-hover:text-white">
+                            {p}
+                          </span>
+                        </label>
+                      )
+                    })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* League */}
+          <div className="relative w-full sm:w-auto flex-1 min-w-[120px] max-w-[200px]">
+            <button
+              className="input-dark w-full text-left flex justify-between items-center"
+              style={{ height: '35px', padding: '8px 12px' }}
+              onClick={() => setIsLeagueOpen(!isLeagueOpen)}
+            >
+              <span className="truncate">
+                {store.league?.length > 0 ? `${store.league.length} Selected` : 'All Leagues'}
+              </span>
+              <span className="text-[10px] ml-2">▼</span>
+            </button>
+            {isLeagueOpen && (
+              <>
+                <div className="fixed inset-0 z-[60]" onClick={() => setIsLeagueOpen(false)}></div>
+                <div className="absolute top-full left-0 mt-1 w-full bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-2xl z-[70] py-1 max-h-60 overflow-y-auto">
+                  {filterOpts.leagues.filter(l => l.toLowerCase() !== 'total').map((l) => {
+                    const isSelected = (store.league || []).includes(l)
+                    return (
+                      <label
+                        key={l}
+                        className="flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-[#2563eb] hover:text-white transition-none group"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            const current = store.league || []
+                            store.setFilter('league', current.includes(l) ? current.filter(x => x !== l) : [...current, l])
+                          }}
+                          className="rounded border-[var(--color-border)] bg-[var(--color-surface-900)] text-[#2563eb] focus:ring-[#2563eb]"
+                        />
+                        <span className="text-[13px] truncate text-[var(--color-text-primary)] group-hover:text-white">
+                          {l}
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Season */}
           <select
-            className="input-dark w-30"
+            className="input-dark w-40"
             value={store.season}
             onChange={(e) => store.setFilter('season', e.target.value)}
           >
@@ -245,16 +326,47 @@ export default function ExplorerPage() {
           </select>
 
           {/* Nationality */}
-          <select
-            className="input-dark w-36"
-            value={store.nationality}
-            onChange={(e) => store.setFilter('nationality', e.target.value)}
-          >
-            <option value="">All Nationalities</option>
-            {filterOpts.nationalities.map((n) => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
+          <div className="relative w-full sm:w-auto flex-1 min-w-[140px] max-w-[200px]">
+            <button
+              className="input-dark w-full text-left flex justify-between items-center"
+              style={{ height: '35px', padding: '8px 12px' }}
+              onClick={() => setIsNationalityOpen(!isNationalityOpen)}
+            >
+              <span className="truncate">
+                {store.nationality?.length > 0 ? `${store.nationality.length} Selected` : 'All Nationalities'}
+              </span>
+              <span className="text-[10px] ml-2">▼</span>
+            </button>
+            {isNationalityOpen && (
+              <>
+                <div className="fixed inset-0 z-[60]" onClick={() => setIsNationalityOpen(false)}></div>
+                <div className="absolute top-full left-0 mt-1 w-full bg-[var(--color-surface-800)] border border-[var(--color-border)] rounded shadow-2xl z-[70] py-1 max-h-60 overflow-y-auto">
+                  {filterOpts.nationalities.map((n) => {
+                    const isSelected = (store.nationality || []).includes(n)
+                    return (
+                      <label
+                        key={n}
+                        className="flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-[#2563eb] hover:text-white transition-none group"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            const current = store.nationality || []
+                            store.setFilter('nationality', current.includes(n) ? current.filter(x => x !== n) : [...current, n])
+                          }}
+                          className="rounded border-[var(--color-border)] bg-[var(--color-surface-900)] text-[#2563eb] focus:ring-[#2563eb]"
+                        />
+                        <span className="text-[13px] truncate text-[var(--color-text-primary)] group-hover:text-white">
+                          {n}
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Team */}
           <select

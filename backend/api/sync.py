@@ -65,7 +65,6 @@ async def add_league(req: AddLeagueRequest):
         loop = asyncio.get_running_loop()
     except RuntimeError:
         loop = asyncio.get_event_loop()
-    print(f"[DEBUG] add_league called. _ws_clients len: {len(_ws_clients)}", flush=True)
     log = _make_log_callback(loop)
 
     result = await asyncio.to_thread(
