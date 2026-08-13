@@ -47,8 +47,8 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
   const [playerLeague, setPlayerLeague] = useState<string>(config.playerLeague || config.league || 'Total')
   const [playerSeason, setPlayerSeason] = useState<string>(config.playerSeason || config.season || 'Total')
 
-  const [comparisonLeagues, setComparisonLeagues] = useState<string[]>(config.comparisonLeagues ? config.comparisonLeagues.split(',') : (config.league && config.league !== 'Total' ? config.league.split(',') : []))
-  const [comparisonSeasons, setComparisonSeasons] = useState<string[]>(config.comparisonSeasons ? config.comparisonSeasons.split(',') : (config.season && config.season !== 'Total' ? config.season.split(',') : []))
+  const [comparisonLeagues, setComparisonLeagues] = useState<string[]>(config.comparisonLeagues && config.comparisonLeagues !== 'Total' ? config.comparisonLeagues.split(',') : (config.league && config.league !== 'Total' ? config.league.split(',') : []))
+  const [comparisonSeasons, setComparisonSeasons] = useState<string[]>(config.comparisonSeasons && config.comparisonSeasons !== 'Total' ? config.comparisonSeasons.split(',') : (config.season && config.season !== 'Total' ? config.season.split(',') : []))
   const [displayMode, setDisplayMode] = useState<string>(config.displayMode || 'total')
 
   const [allLeagues, setAllLeagues] = useState<string[]>([])

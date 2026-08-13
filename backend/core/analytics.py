@@ -233,6 +233,12 @@ def get_scatter_data(
 
     comp_df = df.copy()
 
+    # Auto-resolve position if not provided but player_id is known
+    if not position and filters and filters.get("player_id"):
+        player_df = df[df["player_id"] == filters["player_id"]]
+        if not player_df.empty:
+            position = player_df.iloc[0].get("position", "")
+
     # Apply position filter
     if position:
         pos_list = [p.strip() for p in position.split(",") if p.strip()]

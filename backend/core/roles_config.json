@@ -162,29 +162,6 @@
       "blocked_shots": 0.01
     }
   },
-  "Deepying_Playmaker": {
-    "valid_positions": [
-      "DM",
-      "MC"
-    ],
-    "weights": {
-      "assists": 0.05,
-      "accurate_passes": 0.2,
-      "total_passes": 0.09,
-      "accurate_passes_pct": 0.19,
-      "key_passes": 0.07,
-      "big_chances_created": 0.02,
-      "accurate_long_balls": 0.15,
-      "total_long_balls": 0.03,
-      "accurate_long_balls_pct": 0.1,
-      "dribbles_won": 0.015,
-      "dribbles_won_pct": 0.02,
-      "ground_duels_won": 0.01,
-      "ground_duels_won_pct": 0.025,
-      "tackles": 0.01,
-      "interceptions": 0.02
-    }
-  },
   "Destroyer": {
     "valid_positions": [
       "DM",
@@ -433,6 +410,29 @@
       "dribbles_won": 0.1,
       "dribbles_attempted": 0.05,
       "dribbles_won_pct": 0.04
+    }
+  },
+  "Deep_Lying_Playmaker": {
+    "valid_positions": [
+      "DM",
+      "MC"
+    ],
+    "weights": {
+      "assists": 0.05,
+      "accurate_passes": 0.2,
+      "total_passes": 0.09,
+      "accurate_passes_pct": 0.19,
+      "key_passes": 0.07,
+      "big_chances_created": 0.02,
+      "accurate_long_balls": 0.15,
+      "total_long_balls": 0.03,
+      "accurate_long_balls_pct": 0.1,
+      "dribbles_won": 0.015,
+      "dribbles_won_pct": 0.02,
+      "ground_duels_won": 0.01,
+      "ground_duels_won_pct": 0.025,
+      "tackles": 0.01,
+      "interceptions": 0.02
     }
   }
 }
