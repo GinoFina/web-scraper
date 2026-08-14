@@ -43,7 +43,8 @@ TOURNAMENT_NAMES: dict[int, str] = {
 }
 
 def get_league_multipliers() -> dict[int, float]:
-    path = Path(__file__).parent.parent / "core" / "league_multipliers.json"
+    from core.paths import MULTIPLIERS_PATH
+    path = MULTIPLIERS_PATH
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)

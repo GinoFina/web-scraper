@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { getPlayer } from '../../../services/api'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { getPlayer, API_BASE } from '../../../services/api'
 
 export default function ReportHeatmap({ playerId }: { playerId: number }) {
   const [data, setData] = useState<any>(null)
@@ -14,15 +12,21 @@ export default function ReportHeatmap({ playerId }: { playerId: number }) {
         setData(res)
         // Pick the season with the most matches to ensure we get the main league heatmap
         const validStats = res.stats?.filter((st: any) => st.season_name !== 'Total' && st.tournament_id !== 0) || []
-        const s = validStats.sort((a: any, b: any) => (b.matches || 0) - (a.matches || 0))[0] || res.stats?.[0]
+        const s = validStats.sort((a: any, b: any) => (b.matches || 0) - (a.matches || 0))[0]
         if (s && s.tournament_id && s.season_id) {
           fetch(`${API_BASE}/api/reports/heatmap/${playerId}/${s.tournament_id}/${s.season_id}`)
             .then(r => r.json())
             .then(hmRes => {
-              const hm = hmRes.points || []
-              setHeatmapData(hm)
+              if (hmRes.error) {
+                setHeatmapData([])
+              } else {
+                const hm = hmRes.points || []
+                setHeatmapData(hm)
+              }
             })
             .catch(() => setHeatmapData([]))
+        } else {
+          setHeatmapData([])
         }
       }).catch(() => {})
     }
@@ -126,7 +130,7 @@ export default function ReportHeatmap({ playerId }: { playerId: number }) {
 
   if (!data) return <div className="p-4 text-center text-[var(--color-text-muted)]">Loading heatmap...</div>
 
-  const s = data.stats?.[0]
+  const s = data.stats?.filter((st: any) => st.season_name !== 'Total' && st.tournament_id !== 0).sort((a: any, b: any) => (b.matches || 0) - (a.matches || 0))[0] || data.stats?.[0]
 
   return (
     <div className="bg-[var(--color-surface-800)] rounded-lg p-4 border border-[var(--color-border)]">
@@ -136,6 +140,12 @@ export default function ReportHeatmap({ playerId }: { playerId: number }) {
         <div className="relative w-full max-w-[400px]" style={{ aspectRatio: '130 / 100' }}>
           {/* Base green background */}
           <div className="absolute inset-0 bg-[#547a54] rounded print:![color-adjust:exact] print:![-webkit-print-color-adjust:exact]" />
+
+          {heatmapData.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center text-white/70 font-medium z-10">
+              No heatmap data available
+            </div>
+          )}
 
           {/* Canvas for Heatmap (placed UNDER the pitch lines) */}
           <canvas

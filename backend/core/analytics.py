@@ -12,8 +12,7 @@ import pandas as pd
 from database.connection import get_connection
 from database import repositories as repo
 
-# Load role definitions
-_ROLES_PATH = Path(__file__).resolve().parent / "roles_config.json"
+from core.paths import ROLES_CONFIG_PATH as _ROLES_PATH
 
 
 def _load_roles() -> dict:

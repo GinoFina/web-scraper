@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const API_BASE = 'http://localhost:8000'
+export const API_BASE = import.meta.env.PROD ? '' : 'http://localhost:8000'
 
 export const api = axios.create({
   baseURL: API_BASE,
@@ -155,7 +155,11 @@ export function getProxyImageUrl(originalUrl: string): string {
 
 // ── WebSocket ──────────────────────────────────────────────────────────────
 export function createSyncWs(onMessage: (data: { level: string; message: string }) => void): WebSocket {
-  const ws = new WebSocket('ws://localhost:8000/api/sync/ws/sync-logs')
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const wsUrl = import.meta.env.PROD 
+    ? `${protocol}//${window.location.host}/api/sync/ws/sync-logs` 
+    : 'ws://localhost:8000/api/sync/ws/sync-logs'
+  const ws = new WebSocket(wsUrl)
   ws.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data)

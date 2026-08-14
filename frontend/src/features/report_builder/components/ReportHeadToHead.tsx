@@ -40,6 +40,15 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
     }
   }, [config?.player2Id, config])
 
+  if (!config?.player2Id) {
+    return (
+      <div className="flex flex-col h-full w-full bg-[var(--color-surface-800)] rounded-xl border border-dashed border-[var(--color-border)] p-4 items-center justify-center text-center">
+        <h3 className="text-sm font-bold text-[var(--color-text-primary)] mb-2">Head-to-Head Comparison</h3>
+        <p className="text-xs text-[var(--color-text-muted)]">Please select a second player in the right sidebar configuration.</p>
+      </div>
+    )
+  }
+
   if (!p1Data || !p2Data || !p1Data.metrics || !p2Data.metrics || !p1Info || !p2Info) {
     return <div className="p-4 text-center text-[var(--color-text-muted)] h-full flex items-center justify-center">Loading comparison data...</div>
   }

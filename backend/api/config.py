@@ -12,8 +12,7 @@ from scraper.config import TOURNAMENT_NAMES, get_league_multipliers
 router = APIRouter(prefix="/api/config", tags=["config"])
 logger = logging.getLogger(__name__)
 
-ROLES_CONFIG_PATH = Path(__file__).parent.parent / "core" / "roles_config.json"
-MULTIPLIERS_PATH = Path(__file__).parent.parent / "core" / "league_multipliers.json"
+from core.paths import ROLES_CONFIG_PATH, MULTIPLIERS_PATH
 
 
 class RoleConfig(BaseModel):

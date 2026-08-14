@@ -7,9 +7,13 @@ import sqlite3
 import os
 from pathlib import Path
 
-# Database lives next to the backend package
+# Get user home directory and create the scouting app folder
+USER_DIR = Path.home() / ".df_scouting_app"
+USER_DIR.mkdir(parents=True, exist_ok=True)
+
+# Database lives in the user directory to persist across PyInstaller restarts
 _DB_DIR = Path(__file__).resolve().parent
-DB_PATH = str(_DB_DIR / "sofascore_stats.db")
+DB_PATH = str(USER_DIR / "sofascore_stats.db")
 _SCHEMA_PATH = str(_DB_DIR / "schema.sql")
 
 _connection: sqlite3.Connection | None = None
