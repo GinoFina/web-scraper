@@ -5,12 +5,12 @@ import PlayerAutocomplete from './PlayerAutocomplete'
 
 const STATS_CATEGORIES = [
   { name: 'Generales', keys: ['appearances', 'minutes_played', 'goals', 'assists', 'rating'] },
-  { name: 'Pases y Creación', keys: ['accurate_passes', 'key_passes', 'big_chances_created', 'accurate_long_balls', 'total_long_balls', 'accurate_crosses', 'expected_assists'] },
-  { name: 'Derivados de Pases', keys: ['accurate_passes_pct', 'accurate_long_balls_pct', 'accurate_crosses_pct', 'total_passes', 'total_crosses'] },
+  { name: 'Pases y Creación', keys: ['total_passes', 'accurate_passes', 'key_passes', 'big_chances_created', 'total_long_balls', 'accurate_long_balls', 'total_crosses', 'accurate_crosses', 'expected_assists'] },
+  { name: 'Derivados de Pases', keys: ['accurate_passes_pct', 'accurate_long_balls_pct', 'accurate_crosses_pct'] },
   { name: 'Tiros y Finalización', keys: ['penalty_goals', 'shots_on_target', 'shots_off_target', 'blocked_scoring_attempt', 'big_chances_missed', 'total_shots', 'expected_goals'] },
-  { name: 'Regates', keys: ['dribbles_won', 'dribbles_attempted', 'dribbles_won_pct'] },
-  { name: 'Duelos Aéreos y Terrestres', keys: ['aerial_duels_won', 'aerial_duels_total', 'aerial_duels_won_pct', 'ground_duels_won', 'ground_duels_total', 'ground_duels_won_pct'] },
-  { name: 'Duelos Totales', keys: ['total_duels_won', 'total_duels_won_pct'] },
+  { name: 'Regates', keys: ['dribbles_attempted', 'dribbles_won', 'dribbles_won_pct'] },
+  { name: 'Duelos Aéreos y Terrestres', keys: ['aerial_duels_total', 'aerial_duels_won', 'aerial_duels_won_pct', 'ground_duels_total', 'ground_duels_won', 'ground_duels_won_pct'] },
+  { name: 'Duelos Totales', keys: ['total_duels_total', 'total_duels_won', 'total_duels_won_pct'] },
   { name: 'Defensa', keys: ['tackles', 'interceptions', 'clearances', 'blocked_shots', 'dispossessed', 'offsides', 'possession_lost'] },
   { name: 'Físico', keys: ['distance_covered', 'sprints', 'max_speed'] }
 ]

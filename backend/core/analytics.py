@@ -46,6 +46,8 @@ def aggregate_player_stats(df: pd.DataFrame) -> pd.DataFrame:
         
     if "rating" in df.columns:
         agg_dict["rating"] = "mean"
+    if "max_speed" in df.columns:
+        agg_dict["max_speed"] = "max"
 
     agg_df = df.groupby("player_id", as_index=False).agg(agg_dict)
 
@@ -63,6 +65,7 @@ def aggregate_player_stats(df: pd.DataFrame) -> pd.DataFrame:
         agg_df["accurate_long_balls_pct"] = np.where(agg_df["total_long_balls"] > 0, (agg_df["accurate_long_balls"] / agg_df["total_long_balls"]) * 100, 0)
     if "total_duels_won" in agg_df.columns and "ground_duels_total" in agg_df.columns and "aerial_duels_total" in agg_df.columns:
         tot_duels = agg_df["ground_duels_total"] + agg_df["aerial_duels_total"]
+        agg_df["total_duels_total"] = tot_duels
         agg_df["total_duels_won_pct"] = np.where(tot_duels > 0, (agg_df["total_duels_won"] / tot_duels) * 100, 0)
 
     return agg_df
@@ -106,23 +109,30 @@ def get_available_metrics() -> list[dict]:
         {"key": "minutes_played", "label": "Minutes Played", "category": "General"},
         {"key": "expected_goals", "label": "Expected Goals (xG)", "category": "General"},
         {"key": "expected_assists", "label": "Expected Assists (xA)", "category": "General"},
+        {"key": "total_passes", "label": "Total Passes", "category": "Passing"},
         {"key": "accurate_passes", "label": "Accurate Passes", "category": "Passing"},
         {"key": "accurate_passes_pct", "label": "Pass Accuracy %", "category": "Passing"},
         {"key": "key_passes", "label": "Key Passes", "category": "Passing"},
         {"key": "big_chances_created", "label": "Big Chances Created", "category": "Passing"},
+        {"key": "total_long_balls", "label": "Total Long Balls", "category": "Passing"},
         {"key": "accurate_long_balls", "label": "Accurate Long Balls", "category": "Passing"},
         {"key": "accurate_long_balls_pct", "label": "Long Ball Accuracy %", "category": "Passing"},
+        {"key": "total_crosses", "label": "Total Crosses", "category": "Passing"},
         {"key": "accurate_crosses", "label": "Accurate Crosses", "category": "Passing"},
         {"key": "accurate_crosses_pct", "label": "Cross Accuracy %", "category": "Passing"},
         {"key": "total_shots", "label": "Total Shots", "category": "Shooting"},
         {"key": "shots_on_target", "label": "Shots on Target", "category": "Shooting"},
         {"key": "big_chances_missed", "label": "Big Chances Missed", "category": "Shooting"},
+        {"key": "dribbles_attempted", "label": "Dribbles Attempted", "category": "Dribbling"},
         {"key": "dribbles_won", "label": "Dribbles Won", "category": "Dribbling"},
         {"key": "dribbles_won_pct", "label": "Dribble Success %", "category": "Dribbling"},
+        {"key": "aerial_duels_total", "label": "Aerial Duels Total", "category": "Duels"},
         {"key": "aerial_duels_won", "label": "Aerial Duels Won", "category": "Duels"},
         {"key": "aerial_duels_won_pct", "label": "Aerial Duel %", "category": "Duels"},
+        {"key": "ground_duels_total", "label": "Ground Duels Total", "category": "Duels"},
         {"key": "ground_duels_won", "label": "Ground Duels Won", "category": "Duels"},
         {"key": "ground_duels_won_pct", "label": "Ground Duel %", "category": "Duels"},
+        {"key": "total_duels_total", "label": "Total Duels Total", "category": "Duels"},
         {"key": "total_duels_won", "label": "Total Duels Won", "category": "Duels"},
         {"key": "total_duels_won_pct", "label": "Duel Success %", "category": "Duels"},
         {"key": "tackles", "label": "Tackles", "category": "Defense"},

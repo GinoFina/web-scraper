@@ -73,7 +73,7 @@ export default function ReportStatsTable({ playerId, config }: { playerId: numbe
     if (val == null) return '—'
     if (key.endsWith('_pct')) return `${Number(val).toFixed(1)}%`
     if (['appearances', 'minutes_played'].includes(key)) return val.toString()
-    if (key === 'rating') return Number(val).toFixed(2)
+    if (['rating', 'max_speed'].includes(key)) return Number(val).toFixed(2)
 
     if (displayMode === 'total') {
       return Number.isInteger(val) ? val.toString() : Number(val).toFixed(2)
