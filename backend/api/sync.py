@@ -47,6 +47,10 @@ def _make_log_callback(loop: asyncio.AbstractEventLoop):
 
 class AddLeagueRequest(BaseModel):
     url: str
+    custom_name: str | None = None
+
+class UpdateLeagueNameRequest(BaseModel):
+    custom_name: str
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -73,6 +77,7 @@ async def add_league(req: AddLeagueRequest):
         accumulation="total",
         delay=0.5,
         log=log,
+        custom_name=req.custom_name,
     )
     return result
 
@@ -99,6 +104,18 @@ def toggle_league(league_id: int):
     """Toggle tracking state of a league without deleting it."""
     conn = get_connection()
     return repo.toggle_tracked_league(conn, league_id)
+
+@router.put("/leagues/{league_id}/name")
+def update_league_name(league_id: int, req: UpdateLeagueNameRequest):
+    """Update custom name for a tracked league."""
+    from scraper.collector import save_custom_tournament_name
+    conn = get_connection()
+    save_custom_tournament_name(league_id, req.custom_name.strip())
+    # Update existing tracking record's tournament_name
+    conn.execute("UPDATE tracked_leagues SET tournament_name = ? WHERE tournament_id = ?", (req.custom_name.strip(), league_id))
+    conn.execute("UPDATE season_stats SET tournament_name = ? WHERE tournament_id = ?", (req.custom_name.strip(), league_id))
+    conn.commit()
+    return {"status": "success", "new_name": req.custom_name.strip()}
 
 
 @router.delete("/leagues/{league_id}")

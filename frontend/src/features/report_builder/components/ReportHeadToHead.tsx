@@ -9,10 +9,11 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
   const [p2Info, setP2Info] = useState<any>(null)
 
   useEffect(() => {
+    let isMounted = true
     if (playerId) {
       getPlayerCard(playerId).then(res => {
-        if (res && !res.error) setP1Info(res)
-      })
+        if (isMounted && res && !res.error) setP1Info(res)
+      }).catch(() => {})
       const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
         playerId, metricList, config?.playerLeague, config?.playerSeason, 
@@ -20,15 +21,19 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
         config?.ageMin, config?.ageMax, config?.minutesMin, config?.minutesMax,
         config?.comparisonLeagues === 'Total' ? undefined : config?.comparisonLeagues,
         config?.comparisonSeasons === 'Total' ? undefined : config?.comparisonSeasons
-      ).then(setP1Data).catch(() => {})
+      ).then(res => {
+        if (isMounted) setP1Data(res)
+      }).catch(() => {})
     }
+    return () => { isMounted = false }
   }, [playerId, config])
 
   useEffect(() => {
+    let isMounted = true
     if (config?.player2Id) {
       getPlayerCard(config.player2Id).then(res => {
-        if (res && !res.error) setP2Info(res)
-      })
+        if (isMounted && res && !res.error) setP2Info(res)
+      }).catch(() => {})
       const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
         config.player2Id, metricList, config?.player2League || 'Total', config?.player2Season || 'Total', 
@@ -36,8 +41,11 @@ export default function ReportHeadToHead({ playerId, config }: { playerId: numbe
         config?.ageMin, config?.ageMax, config?.minutesMin, config?.minutesMax,
         config?.comparisonLeagues === 'Total' ? undefined : config?.comparisonLeagues,
         config?.comparisonSeasons === 'Total' ? undefined : config?.comparisonSeasons
-      ).then(setP2Data).catch(() => {})
+      ).then(res => {
+        if (isMounted) setP2Data(res)
+      }).catch(() => {})
     }
+    return () => { isMounted = false }
   }, [config?.player2Id, config])
 
   if (!config?.player2Id) {

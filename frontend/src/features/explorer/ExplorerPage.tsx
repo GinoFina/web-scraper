@@ -14,6 +14,8 @@ interface FilterOptions {
 export default function ExplorerPage() {
   const store = usePlayerStore()
   const tableContainerRef = useRef<HTMLDivElement>(null)
+  const requestCounterRef = useRef<number>(0)
+  const activeRequestRef = useRef<number>(0)
   const [data, setData] = useState<{ data: any[]; total: number; total_pages: number; page: number }>({
     data: [],
     total: 0,
@@ -44,7 +46,7 @@ export default function ExplorerPage() {
   }, [])
 
   // Fetch players when filters change
-  const fetchPlayers = useCallback(async () => {
+  const fetchPlayers = useCallback(async (requestId: number) => {
     setLoading(true)
     try {
       const filters: any = {
@@ -67,6 +69,9 @@ export default function ExplorerPage() {
       if (store.minutesMax != null && !isNaN(store.minutesMax)) filters.minutes_max = store.minutesMax
 
       const result = await getPlayers(filters)
+      
+      if (activeRequestRef.current !== requestId) return
+
       setData(prev => {
         if (store.page === 1) return result
         return {
@@ -75,6 +80,7 @@ export default function ExplorerPage() {
         }
       })
     } catch (e: any) {
+      if (activeRequestRef.current !== requestId) return
       console.error(e)
       if (store.page === 1) setData({ data: [], total: 0, total_pages: 1, page: 1, error: e.message } as any)
     }
@@ -82,7 +88,14 @@ export default function ExplorerPage() {
   }, [store])
 
   useEffect(() => {
-    fetchPlayers()
+    const requestId = ++requestCounterRef.current
+    activeRequestRef.current = requestId
+    
+    const timer = setTimeout(() => {
+      fetchPlayers(requestId)
+    }, 300)
+    
+    return () => clearTimeout(timer)
   }, [fetchPlayers])
 
   const handleSort = (col: string) => {

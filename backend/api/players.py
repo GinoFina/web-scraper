@@ -30,9 +30,8 @@ def get_players(
     role: str | None = None,
 ):
     """Paginated player list with filtering and sorting."""
-    conn = get_connection()
-    return repo.get_players_paginated(
-        conn,
+    from core import analytics
+    return analytics.get_filtered_paginated_players(
         page=page,
         page_size=page_size,
         name=name,

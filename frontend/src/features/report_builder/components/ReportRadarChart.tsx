@@ -7,6 +7,7 @@ export default function ReportRadarChart({ playerId, config }: { playerId: numbe
   const [radarData2, setRadarData2] = useState<any>(null)
 
   useEffect(() => {
+    let isMounted = true
     if (playerId) {
       const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
@@ -22,11 +23,15 @@ export default function ReportRadarChart({ playerId, config }: { playerId: numbe
         config?.minutesMax,
         config?.comparisonLeagues,
         config?.comparisonSeasons
-      ).then(setRadarData).catch(() => { })
+      ).then(res => {
+        if (isMounted) setRadarData(res)
+      }).catch(() => { })
     }
+    return () => { isMounted = false }
   }, [playerId, config])
 
   useEffect(() => {
+    let isMounted = true
     if (config?.player2Id) {
       const metricList = Array.isArray(config?.metrics) ? config.metrics.join(',') : (config?.metrics || '')
       getRadarData(
@@ -42,10 +47,13 @@ export default function ReportRadarChart({ playerId, config }: { playerId: numbe
         config?.minutesMax,
         config?.comparisonLeagues,
         config?.comparisonSeasons
-      ).then(setRadarData2).catch(() => { })
+      ).then(res => {
+        if (isMounted) setRadarData2(res)
+      }).catch(() => { })
     } else {
       setRadarData2(null)
     }
+    return () => { isMounted = false }
   }, [config?.player2Id, config])
 
   if (!radarData || !radarData.metrics || radarData.metrics.length === 0) {

@@ -13,12 +13,15 @@ export default function PlayerAutocomplete({ playerId, onChange }: Props) {
   const [loading, setLoading] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
+  const initialLoadRef = useRef<number>(0)
+
   // Load initial name if playerId exists
   useEffect(() => {
     if (playerId) {
+      const currentReq = ++initialLoadRef.current
       getPlayer(playerId)
         .then((res) => {
-          if (res?.player) {
+          if (currentReq === initialLoadRef.current && res?.player) {
             setQuery(res.player.name)
           }
         })
@@ -39,6 +42,9 @@ export default function PlayerAutocomplete({ playerId, onChange }: Props) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  const requestCounterRef = useRef<number>(0)
+  const activeRequestRef = useRef<number>(0)
+
   // Debounced search
   useEffect(() => {
     if (!open) return
@@ -46,15 +52,25 @@ export default function PlayerAutocomplete({ playerId, onChange }: Props) {
       setResults([])
       return
     }
+
+    const requestId = ++requestCounterRef.current
+    activeRequestRef.current = requestId
+
     const delayDebounceFn = setTimeout(async () => {
       setLoading(true)
       try {
         const res = await getPlayers({ name: query, page: 1, page_size: 10 })
-        setResults(res.data || [])
+        if (activeRequestRef.current === requestId) {
+          setResults(res.data || [])
+        }
       } catch {
-        setResults([])
+        if (activeRequestRef.current === requestId) {
+          setResults([])
+        }
       }
-      setLoading(false)
+      if (activeRequestRef.current === requestId) {
+        setLoading(false)
+      }
     }, 300)
 
     return () => clearTimeout(delayDebounceFn)

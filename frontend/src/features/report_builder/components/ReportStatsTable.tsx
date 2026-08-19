@@ -6,9 +6,13 @@ export default function ReportStatsTable({ playerId, config }: { playerId: numbe
   const [data, setData] = useState<any>(null)
 
   useEffect(() => {
+    let isMounted = true
     if (playerId) {
-      getPlayer(playerId).then(setData).catch(() => { })
+      getPlayer(playerId).then(res => {
+        if (isMounted) setData(res)
+      }).catch(() => { })
     }
+    return () => { isMounted = false }
   }, [playerId])
 
   const globalDisplayMode = usePlayerStore(state => state.displayMode)
@@ -44,7 +48,8 @@ export default function ReportStatsTable({ playerId, config }: { playerId: numbe
       'accurate_passes', 'total_passes', 'total_shots', 'shots_on_target', 
       'dribbles_won', 'dribbles_attempted', 'tackles', 'interceptions', 
       'clearances', 'aerial_duels_won', 'aerial_duels_total', 'ground_duels_won', 
-      'ground_duels_total', 'total_duels_won', 'expected_goals', 'expected_assists'
+      'ground_duels_total', 'total_duels_won', 'total_duels_total', 'expected_goals', 'expected_assists',
+      'total_long_balls', 'accurate_long_balls', 'total_crosses', 'accurate_crosses', 'big_chances_created', 'big_chances_missed', 'shots_off_target', 'blocked_scoring_attempt'
     ]
     for (const k of keysToSum) agg[k] = 0
     let totalMinutes = 0
@@ -60,9 +65,12 @@ export default function ReportStatsTable({ playerId, config }: { playerId: numbe
     
     agg.rating = totalMinutes > 0 ? weightedRatingSum / totalMinutes : 0
     agg.accurate_passes_pct = agg.total_passes > 0 ? (agg.accurate_passes / agg.total_passes) * 100 : 0
+    agg.accurate_long_balls_pct = agg.total_long_balls > 0 ? (agg.accurate_long_balls / agg.total_long_balls) * 100 : 0
+    agg.accurate_crosses_pct = agg.total_crosses > 0 ? (agg.accurate_crosses / agg.total_crosses) * 100 : 0
     agg.dribbles_won_pct = agg.dribbles_attempted > 0 ? (agg.dribbles_won / agg.dribbles_attempted) * 100 : 0
     agg.aerial_duels_won_pct = agg.aerial_duels_total > 0 ? (agg.aerial_duels_won / agg.aerial_duels_total) * 100 : 0
     agg.ground_duels_won_pct = agg.ground_duels_total > 0 ? (agg.ground_duels_won / agg.ground_duels_total) * 100 : 0
+    agg.total_duels_won_pct = agg.total_duels_total > 0 ? (agg.total_duels_won / agg.total_duels_total) * 100 : 0
     
     agg.season_name = config?.season === 'Total' ? 'Total' : config.season
     return agg

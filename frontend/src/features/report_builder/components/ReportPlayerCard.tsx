@@ -5,12 +5,17 @@ export default function ReportPlayerCard({ playerId }: { playerId: number }) {
   const [data, setData] = useState<any>(null)
 
   useEffect(() => {
+    let isMounted = true
     if (playerId) {
-      getPlayerCard(playerId).then(setData).catch(() => {})
+      getPlayerCard(playerId).then((res) => {
+        if (isMounted) setData(res)
+      }).catch(() => {})
     }
+    return () => { isMounted = false }
   }, [playerId])
 
   if (!data) return <div className="p-4 text-center text-[var(--color-text-muted)]">Loading player data...</div>
+  if (data.error || !data.player) return <div className="p-4 text-center text-red-500">Player not found or data error.</div>
 
   const p = data.player
 

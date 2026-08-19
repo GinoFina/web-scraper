@@ -10,7 +10,7 @@ import sqlite3
 from typing import Callable
 
 from scraper.client import SofascoreClient
-from scraper.config import TOURNAMENT_NAMES
+from scraper.config import TOURNAMENT_NAMES, save_custom_tournament_name
 from database.connection import get_connection
 from database import repositories as repo
 
@@ -177,6 +177,7 @@ def run_league_pipeline(
     accumulation: str = "total",
     delay: float = 0.5,
     log: LogCallback = _noop_log,
+    custom_name: str | None = None,
 ) -> dict:
     """
     Full pipeline: download league stats → enrich players → recalculate derived fields.
@@ -195,6 +196,9 @@ def run_league_pipeline(
     log("info", f"Tournament ID {tournament_id} | Season ID {season_id} | Accumulation: {accumulation}")
 
     # ── Step 2: Get tournament metadata ───────────────────────────────────
+    if custom_name and custom_name.strip():
+        save_custom_tournament_name(tournament_id, custom_name.strip())
+
     meta = client.get_tournament_meta(tournament_id, season_id)
     meta["season_id"] = season_id
     log("info", f"League: {meta['tournament_name']} — {meta['season_name']}")

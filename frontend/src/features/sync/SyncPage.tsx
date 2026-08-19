@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { addLeague, updateAll, getTrackedLeagues, deleteLeague, toggleLeague, createSyncWs, API_BASE } from '../../services/api'
+import { addLeague, updateAll, getTrackedLeagues, deleteLeague, toggleLeague, createSyncWs, API_BASE, updateLeagueName } from '../../services/api'
 
 interface LogEntry {
   level: string
@@ -12,6 +12,7 @@ export default function SyncPage() {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [url, setUrl] = useState('')
+  const [customName, setCustomName] = useState('')
   const [syncing, setSyncing] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
@@ -66,8 +67,9 @@ export default function SyncPage() {
     setSyncing(true)
     setLogs((prev) => [...prev, { level: 'info', message: `Starting pipeline for: ${url}`, timestamp: new Date().toLocaleTimeString() }])
     try {
-      await addLeague(url.trim())
+      await addLeague(url.trim(), customName.trim() || undefined)
       setUrl('')
+      setCustomName('')
       await fetchLeagues()
     } catch (err: any) {
       setLogs((prev) => [...prev, { level: 'error', message: `Error: ${err.message}`, timestamp: new Date().toLocaleTimeString() }])
@@ -90,6 +92,18 @@ export default function SyncPage() {
   const handleToggleTracking = async (id: number) => {
     await toggleLeague(id)
     await fetchLeagues()
+  }
+
+  const handleEditName = async (id: number, currentName: string) => {
+    const newName = window.prompt("Ingresa el nuevo nombre para esta liga:", currentName)
+    if (newName && newName.trim() !== "" && newName !== currentName) {
+      try {
+        await updateLeagueName(id, newName.trim())
+        await fetchLeagues()
+      } catch (err) {
+        console.error("Failed to update name", err)
+      }
+    }
   }
 
   const formatDate = (dateStr?: string) => {
@@ -153,10 +167,18 @@ export default function SyncPage() {
         <div className="flex gap-3">
           <input
             type="text"
-            placeholder="Sofascore league URL (e.g. https://www.sofascore.com/tournament/football/...)"
-            className="input-dark flex-1"
+            placeholder="Sofascore league URL"
+            className="input-dark flex-[2]"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAddLeague()}
+          />
+          <input
+            type="text"
+            placeholder="Custom Name (e.g. England 1) - Optional"
+            className="input-dark flex-[1]"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddLeague()}
           />
           <button className="btn-primary" onClick={handleAddLeague} disabled={syncing || !url.trim()}>
@@ -201,6 +223,15 @@ export default function SyncPage() {
                             <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                               {name}
                             </p>
+                            <button
+                              onClick={() => handleEditName(main.tournament_id, name)}
+                              className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] transition-colors"
+                              title="Editar Nombre"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </button>
                             {!isActive && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded uppercase font-bold" style={{ background: '#3f3f46', color: '#d4d4d8' }}>
                                 Pausado
@@ -249,11 +280,12 @@ export default function SyncPage() {
                         }}
                       >
                         <div className="rounded-lg border border-[var(--color-surface-500)] bg-[var(--color-surface-800)]">
-                          <div className="p-1.5 flex flex-col max-h-[250px] overflow-y-auto">
-                            {older.map((old) => (
-                              <div key={old.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5 transition-colors">
+                          <div className="p-2 flex flex-col gap-1 max-h-[250px] overflow-y-auto">
+                            {older.map((old, idx) => (
+                              <div key={old.id} className={`flex items-center justify-between p-3 rounded-md hover:bg-white/5 transition-colors ${idx !== older.length - 1 ? 'border-b border-[var(--color-surface-600)] mb-2 pb-4' : ''}`}>
                                 <div>
-                                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Temporada {old.season_name} · Last: {formatDate(old.last_updated)}</p>
+                                  <p className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>Temporada {old.season_name}</p>
+                                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Last: {formatDate(old.last_updated)}</p>
                                 </div>
                                 <button
                                   className={`text-xs px-3 py-1.5 w-[115px] whitespace-nowrap flex items-center justify-center ${old.is_active !== 0 ? 'btn-danger' : 'btn-ghost font-medium'}`}

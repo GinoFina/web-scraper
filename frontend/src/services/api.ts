@@ -117,8 +117,8 @@ export async function getRadarData(playerId: number, metrics?: string, playerLea
 }
 
 // ── Sync ───────────────────────────────────────────────────────────────────
-export async function addLeague(url: string) {
-  const { data } = await api.post('/api/sync/league', { url })
+export async function addLeague(url: string, custom_name?: string) {
+  const { data } = await api.post('/api/sync/league', { url, custom_name })
   return data
 }
 
@@ -139,6 +139,11 @@ export async function deleteLeague(leagueId: number) {
 
 export async function toggleLeague(leagueId: number) {
   const { data } = await api.post(`/api/sync/leagues/${leagueId}/toggle`)
+  return data
+}
+
+export async function updateLeagueName(leagueId: number, customName: string) {
+  const { data } = await api.put(`/api/sync/leagues/${leagueId}/name`, { custom_name: customName })
   return data
 }
 

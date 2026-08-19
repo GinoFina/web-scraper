@@ -542,10 +542,16 @@ def get_all_stats_as_dicts(conn: sqlite3.Connection, accumulation: str = "total"
     """Fetch all stats joined with players for Pandas processing."""
     rows = conn.execute(
         """
+        WITH RankedEvals AS (
+            SELECT *, ROW_NUMBER() OVER(PARTITION BY stats_id ORDER BY world_score DESC) as rn
+            FROM player_evaluations
+        )
         SELECT s.*, p.name, COALESCE(s.team_name, p.team) as team, p.team_id, p.nationality, p.country_alpha2,
-               p.position, p.specific_position, p.age
+               p.position, p.specific_position, p.age,
+               e.role, e.role_score, e.league_score, e.world_score
         FROM season_stats s
         JOIN players p ON p.player_id = s.player_id
+        LEFT JOIN RankedEvals e ON e.stats_id = s.id
         WHERE s.accumulation = ?
         ORDER BY p.name
         """,

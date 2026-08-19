@@ -256,7 +256,7 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
                             Total
                           </label>
                           {combinedLeagues.map(l => (
-                            <label key={l} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white">
+                            <label key={l} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white border-b border-[var(--color-surface-700)] last:border-0">
                               <input type="checkbox" checked={comparisonLeagues.includes(l)} onChange={() => {
                                 setComparisonLeagues(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l])
                               }} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />
@@ -283,7 +283,7 @@ export default function ComponentConfigModal({ item, onClose, onSave }: Props) {
                             Total
                           </label>
                           {combinedSeasons.map(s => (
-                            <label key={s} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white">
+                            <label key={s} className="flex items-center gap-2 p-2 hover:bg-[var(--color-surface-700)] cursor-pointer text-sm text-white border-b border-[var(--color-surface-700)] last:border-0">
                               <input type="checkbox" checked={comparisonSeasons.includes(s)} onChange={() => {
                                 setComparisonSeasons(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
                               }} className="rounded bg-[var(--color-surface-900)] border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]" />

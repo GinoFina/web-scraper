@@ -48,9 +48,19 @@ class SofascoreClient:
     def get_tournament_meta(self, tournament_id: int, season_id: int) -> dict:
         """Get tournament and season names. Uses standardized name if available."""
         std_name = TOURNAMENT_NAMES.get(tournament_id)
+        raw_name = f"ID:{tournament_id}"
+        
+        if not std_name:
+            try:
+                info = self.api_get(f"/unique-tournament/{tournament_id}")
+                raw_name = info.get("uniqueTournament", {}).get("name", raw_name)
+            except Exception:
+                pass
+                
         try:
             data = self.api_get(f"/unique-tournament/{tournament_id}/season/{season_id}")
-            raw_name = data.get("uniqueTournament", {}).get("name", f"ID:{tournament_id}")
+            if not std_name:
+                raw_name = data.get("uniqueTournament", {}).get("name", raw_name)
             season = data.get("season", {})
             return {
                 "tournament_name": std_name or raw_name,
@@ -61,7 +71,8 @@ class SofascoreClient:
             pass
         try:
             data = self.api_get(f"/unique-tournament/{tournament_id}/seasons")
-            raw_name = data.get("uniqueTournament", {}).get("name", f"ID:{tournament_id}")
+            if not std_name:
+                raw_name = data.get("uniqueTournament", {}).get("name", raw_name)
             season = next(
                 (s for s in data.get("seasons", []) if s.get("id") == season_id), None
             )

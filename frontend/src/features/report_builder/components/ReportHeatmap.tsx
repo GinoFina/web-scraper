@@ -7,8 +7,10 @@ export default function ReportHeatmap({ playerId }: { playerId: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
+    let isMounted = true
     if (playerId) {
       getPlayer(playerId).then(res => {
+        if (!isMounted) return
         setData(res)
         // Pick the season with the most matches to ensure we get the main league heatmap
         const validStats = res.stats?.filter((st: any) => st.season_name !== 'Total' && st.tournament_id !== 0) || []
@@ -17,6 +19,7 @@ export default function ReportHeatmap({ playerId }: { playerId: number }) {
           fetch(`${API_BASE}/api/reports/heatmap/${playerId}/${s.tournament_id}/${s.season_id}`)
             .then(r => r.json())
             .then(hmRes => {
+              if (!isMounted) return
               if (hmRes.error) {
                 setHeatmapData([])
               } else {
@@ -24,12 +27,13 @@ export default function ReportHeatmap({ playerId }: { playerId: number }) {
                 setHeatmapData(hm)
               }
             })
-            .catch(() => setHeatmapData([]))
+            .catch(() => { if (isMounted) setHeatmapData([]) })
         } else {
           setHeatmapData([])
         }
       }).catch(() => {})
     }
+    return () => { isMounted = false }
   }, [playerId])
 
   useEffect(() => {

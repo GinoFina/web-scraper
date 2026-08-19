@@ -35,12 +35,19 @@ def aggregate_player_stats(df: pd.DataFrame) -> pd.DataFrame:
     if not filtered.empty:
         df = filtered
 
-    first_cols = ["name", "team", "position", "specific_position", "age", "tournament_name", "season_name"]
+    # Sort by minutes_played descending so 'first' aggregation picks the tournament with most minutes
+    if "minutes_played" in df.columns:
+        df = df.sort_values("minutes_played", ascending=False)
+
+    first_cols = [
+        "name", "team", "position", "specific_position", "age", "tournament_name", "season_name",
+        "role", "role_score", "league_score", "world_score", "nationality", "country_alpha2"
+    ]
     agg_dict = {col: "first" for col in first_cols if col in df.columns}
 
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    skip_sum = ["player_id", "tournament_id", "season_id", "age", "rating"]
-    sum_cols = [c for c in numeric_cols if c not in skip_sum and not c.endswith("_pct")]
+    skip_sum = ["player_id", "tournament_id", "season_id", "age", "rating", "role_score", "league_score", "world_score"]
+    sum_cols = [c for c in numeric_cols if c not in skip_sum and not c.endswith("_pct") and not c.endswith("_id") and ":" not in c]
     for c in sum_cols:
         agg_dict[c] = "sum"
         
@@ -155,6 +162,129 @@ def build_dataframe(accumulation: str = "total") -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
+def get_filtered_paginated_players(
+    page: int,
+    page_size: int,
+    name: str | None = None,
+    position: str | None = None,
+    specific_position: str | None = None,
+    nationality: str | None = None,
+    team: str | None = None,
+    league: str | None = None,
+    season: str | None = None,
+    age_min: int | None = None,
+    age_max: int | None = None,
+    minutes_min: int | None = None,
+    minutes_max: int | None = None,
+    sort_by: str = "name",
+    sort_dir: str = "asc",
+    role: str | None = None,
+) -> dict:
+    """Fetch players using pandas to properly aggregate multiple matching rows (e.g. halves of a season)."""
+    # ALWAYS load accumulation="total" since Sofascore scraper stores both tournament rows and career rows under "total".
+    df = build_dataframe(accumulation="total")
+    
+    if df.empty:
+        return {"data": [], "total": 0, "page": page, "page_size": page_size, "total_pages": 1}
+
+    # Solve the role multiplier bug: player_evaluations has multiple roles per stats_id.
+    # We must deduplicate by stats_id (which is 'id' in df) before summing, otherwise stats get multiplied by the number of roles!
+    if role:
+        df = df[df["role"] == role]
+    else:
+        if "id" in df.columns and "world_score" in df.columns:
+            df = df.sort_values("world_score", ascending=False).drop_duplicates(subset=["id"], keep="first")
+
+    # IMPORTANT: 
+    # If the user filters by season or league, we want to sum the specific tournament rows, so EXCLUDE the Career Total row.
+    # If the user does NOT filter by season or league ("All Seasons"), we ONLY want the Career Total row.
+    if season or league:
+        df = df[df["tournament_name"].str.lower() != "total"]
+    else:
+        df = df[df["tournament_name"].str.lower() == "total"]
+
+    # Apply filters
+    if name:
+        df = df[df["name"].str.contains(name, case=False, na=False)]
+    
+    if position:
+        mask = df["position"].str.contains(position, case=False, na=False)
+        if mask.sum() == 0:
+            mask = df["specific_position"].str.contains(position, case=False, na=False)
+        df = df[mask]
+        
+    if specific_position:
+        sp_list = [sp.strip() for sp in specific_position.split(",") if sp.strip()]
+        if sp_list:
+            masks = [df["specific_position"].str.contains(sp, case=False, na=False) for sp in sp_list]
+            df = df[pd.concat(masks, axis=1).any(axis=1)]
+            
+    if nationality:
+        nat_list = [n.strip() for n in nationality.split(",") if n.strip()]
+        if nat_list:
+            df = df[df["nationality"].isin(nat_list)]
+            
+    if team:
+        df = df[df["team"] == team]
+        
+    if league:
+        league_list = [l.strip() for l in league.split(",") if l.strip()]
+        if league_list:
+            df = df[df["tournament_name"].isin(league_list)]
+            
+    if season:
+        df = df[df["season_name"] == season]
+        
+    if age_min is not None:
+        df = df[df["age"] >= age_min]
+    if age_max is not None:
+        df = df[df["age"] <= age_max]
+        
+    if role:
+        df = df[df["role"] == role]
+        
+    if df.empty:
+        return {"data": [], "total": 0, "page": page, "page_size": page_size, "total_pages": 1}
+        
+    # Aggregate to sum multiple rows per player
+    agg_df = aggregate_player_stats(df)
+    
+    # Apply minutes filter AFTER aggregation
+    if minutes_min is not None:
+        agg_df = agg_df[agg_df["minutes_played"] >= minutes_min]
+    if minutes_max is not None:
+        agg_df = agg_df[agg_df["minutes_played"] <= minutes_max]
+        
+    if agg_df.empty:
+        return {"data": [], "total": 0, "page": page, "page_size": page_size, "total_pages": 1}
+
+    # Sort
+    if sort_by in agg_df.columns:
+        ascending = sort_dir.lower() == "asc"
+        # For strings, pandas sorts normally. For numbers, NaN should be handled
+        agg_df = agg_df.sort_values(by=sort_by, ascending=ascending, na_position='last')
+    
+    total = len(agg_df)
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    
+    # Paginate
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    paginated_df = agg_df.iloc[start_idx:end_idx]
+    
+    # Convert to list of dicts. Replace NaN with None
+    paginated_df = paginated_df.replace({np.nan: None})
+    data = paginated_df.to_dict(orient="records")
+    
+    return {
+        "data": data,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages
+    }
+
+
 def compute_positional_average(df: pd.DataFrame, position: str, filters: dict | None = None) -> dict:
     """
     Compute the average stats for a given position.
@@ -236,9 +366,22 @@ def get_scatter_data(
     Build scatter plot data with X/Y metrics.
     Includes the positional average as a reference point.
     """
-    df = build_dataframe()
+    df = build_dataframe(accumulation="total")
     if df.empty:
         return {"players": [], "average": None}
+
+    # Solve the role multiplier bug: deduplicate by stats_id
+    if "id" in df.columns and "world_score" in df.columns:
+        df = df.sort_values("world_score", ascending=False).drop_duplicates(subset=["id"], keep="first")
+
+    # If no league filter is applied, we want the Career Total rows.
+    # If a league filter IS applied, we want the specific tournament rows.
+    if filters and filters.get("comparison_league"):
+        leagues = [l.strip() for l in filters["comparison_league"].split(",")]
+        if "Total" not in leagues and "total" not in [l.lower() for l in leagues]:
+            df = df[df["tournament_name"].str.lower() != "total"]
+    else:
+        df = df[df["tournament_name"].str.lower() == "total"]
 
     comp_df = df.copy()
 
@@ -360,15 +503,33 @@ def get_radar_data(
     """
     Build radar chart data for a player showing percentiles vs positional average.
     """
-    df = build_dataframe()
+    df = build_dataframe(accumulation="total")
     if df.empty:
         return {"player": None, "average": None, "metrics": []}
 
+    # Solve the role multiplier bug: deduplicate by stats_id
+    if "id" in df.columns and "world_score" in df.columns:
+        df = df.sort_values("world_score", ascending=False).drop_duplicates(subset=["id"], keep="first")
+
     comp_df = df.copy()
+
+    # Determine comp_df based on comparison_league
+    if filters and filters.get("comparison_league"):
+        comp_league_list = [l.strip() for l in filters["comparison_league"].split(",")]
+        if "Total" not in comp_league_list and "total" not in [l.lower() for l in comp_league_list]:
+            comp_df = comp_df[comp_df["tournament_name"].str.lower() != "total"]
+            comp_df = comp_df[comp_df["tournament_name"].isin(comp_league_list)]
+        else:
+            comp_df = comp_df[comp_df["tournament_name"].str.lower() == "total"]
+    else:
+        comp_df = comp_df[comp_df["tournament_name"].str.lower() == "total"]
 
     player_df = df[df["player_id"] == player_id]
     if player_league and player_league != "Total":
         player_df = player_df[player_df["tournament_name"] == player_league]
+    elif player_league == "Total":
+        player_df = player_df[player_df["tournament_name"].str.lower() == "total"]
+    
     if player_season and player_season != "Total":
         player_df = player_df[player_df["season_name"] == player_season]
 
@@ -383,10 +544,6 @@ def get_radar_data(
     position = comparison_position if comparison_position else player.get("position", "")
 
     if filters:
-        if filters.get("comparison_league"):
-            comp_league_list = [l.strip() for l in filters["comparison_league"].split(",")]
-            if "Total" not in comp_league_list and "total" not in [l.lower() for l in comp_league_list]:
-                comp_df = comp_df[comp_df["tournament_name"].isin(comp_league_list)]
         if filters.get("comparison_season"):
             comp_season_list = [s.strip() for s in filters["comparison_season"].split(",")]
             if "Total" not in comp_season_list and "total" not in [s.lower() for s in comp_season_list]:

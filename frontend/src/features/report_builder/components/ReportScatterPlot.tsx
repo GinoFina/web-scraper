@@ -11,9 +11,10 @@ export default function ReportScatterPlot({ playerId, config }: { playerId: numb
   const metric_y = config?.yAxis || 'goals'
 
   useEffect(() => {
+    let isMounted = true
     if (playerId) {
       getPlayer(playerId).then(res => {
-        setPlayerInfo(res)
+        if (isMounted) setPlayerInfo(res)
         getScatterData({
           metric_x,
           metric_y,
@@ -28,9 +29,12 @@ export default function ReportScatterPlot({ playerId, config }: { playerId: numb
           age_max: config?.ageMax,
           minutes_min: config?.minutesMin,
           minutes_max: config?.minutesMax
-        }).then(setData).catch(() => {})
+        }).then(res => {
+          if (isMounted) setData(res)
+        }).catch(() => {})
       }).catch(() => {})
     }
+    return () => { isMounted = false }
   }, [playerId, metric_x, metric_y, config])
 
   if (!data || !playerInfo) return <div className="p-4 text-center text-[var(--color-text-muted)]">Loading scatter data...</div>
